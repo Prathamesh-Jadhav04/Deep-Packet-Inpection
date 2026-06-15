@@ -61,6 +61,7 @@ export default function FlowInspectorTab() {
           ja3: p.ja3 || '',
           ja4: p.ja4 || '',
           eti: p.eti || '',
+          country: p.country || 'Unknown',
         };
       } else {
         existing.packets += 1;
@@ -78,6 +79,10 @@ export default function FlowInspectorTab() {
         // Save domain context if discovered later
         if (p.domain && !existing.domain) {
           existing.domain = p.domain;
+        }
+        // Save country context if discovered later
+        if (p.country && p.country !== 'Unknown' && existing.country === 'Unknown') {
+          existing.country = p.country;
         }
         // Retain latest TLS fingerprints
         if (p.ja3 && !existing.ja3) existing.ja3 = p.ja3;
@@ -214,10 +219,10 @@ export default function FlowInspectorTab() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-stretch lg:items-start w-full max-w-full overflow-hidden">
         {/* Main flows table grid */}
-        <div className="flex-1 w-full space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex-1 w-full min-w-0 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="text-caption text-[var(--text-secondary)] font-medium uppercase font-mono">
               Active Conversations ({filteredFlows.length})
             </div>
@@ -242,23 +247,25 @@ export default function FlowInspectorTab() {
               description="Flow analytics will render once packet frames are received. Ensure capture is active."
             />
           ) : (
-            <DataTable
-              data={filteredFlows}
-              columns={columns}
-              rowKey={(f) => f.id}
-              actionField={(f) => f.action}
-              onRowClick={(f) => {
-                setSelectedFlow(f);
-                setActionMessage(null);
-              }}
-              height="450px"
-            />
+            <div className="w-full overflow-hidden">
+              <DataTable
+                data={filteredFlows}
+                columns={columns}
+                rowKey={(f) => f.id}
+                actionField={(f) => f.action}
+                onRowClick={(f) => {
+                  setSelectedFlow(f);
+                  setActionMessage(null);
+                }}
+                height="450px"
+              />
+            </div>
           )}
         </div>
 
         {/* Selected Flow Inspector drawer details (Right Column) */}
         {selectedFlow && (
-          <div className="w-full lg:w-[350px] dpi-card space-y-4 border border-[var(--border-strong)] flex-shrink-0 animate-slide-up sticky top-20">
+          <div className="w-full lg:w-[350px] dpi-card space-y-4 border border-[var(--border-strong)] flex-shrink-0 animate-slide-up lg:sticky lg:top-20">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div className="flex items-center gap-1.5 text-body-sm font-semibold text-[var(--text)]">
                 <Network className="w-4 h-4 text-[var(--accent-blue)]" />
@@ -314,6 +321,10 @@ export default function FlowInspectorTab() {
                 <div className="flex justify-between">
                   <span className="text-[var(--text-muted)]">Protocol</span>
                   <span className="font-mono font-bold uppercase text-[var(--accent-cyan)]">{selectedFlow.protocol}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[var(--text-muted)]">Destination Country</span>
+                  <span className="font-mono font-semibold text-[var(--text)]">{selectedFlow.country}</span>
                 </div>
               </div>
 

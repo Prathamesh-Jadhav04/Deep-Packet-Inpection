@@ -447,8 +447,13 @@ export default function OverviewTab() {
                     <AlertTriangle className="w-4 h-4 text-[var(--accent-red)] flex-shrink-0 mt-0.5 animate-pulse" />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline">
-                        <span className="font-semibold text-[var(--text)] uppercase tracking-wide text-[10px]">
+                        <span className="font-semibold text-[var(--text)] uppercase tracking-wide text-[10px] flex items-center flex-wrap gap-1.5">
                           {anomaly.type}
+                          {anomaly.mitre_id && (
+                            <span className="px-1 py-0.5 bg-[var(--accent-red)]/10 text-[var(--accent-red)] rounded border border-[var(--accent-red)]/20 font-mono font-semibold text-[9px] normal-case">
+                              MITRE {anomaly.mitre_id} ({anomaly.mitre_technique})
+                            </span>
+                          )}
                         </span>
                         <span className="text-[10px] text-[var(--text-muted)] font-mono">
                           {new Date(anomaly.timestamp * 1000).toLocaleTimeString()}

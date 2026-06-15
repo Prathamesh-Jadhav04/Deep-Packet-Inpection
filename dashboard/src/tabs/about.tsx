@@ -276,28 +276,30 @@ export default function AboutTab() {
         {activeSubTab === 'architecture' && (
           <div className="space-y-6 animate-fade-in">
             {/* Visual Pipeline Layout */}
-            <div className="flex flex-col lg:flex-row items-stretch gap-4">
-              {PIPELINE_STEPS.map((step, idx) => (
-                <div key={idx} className="flex-1 dpi-card relative flex flex-col justify-between p-5 border border-[var(--border)] hover:border-[var(--border-strong)] transition-all">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[28px] font-mono font-bold tracking-tight opacity-10" style={{ color: step.color }}>
-                        {step.step}
-                      </span>
-                      <step.icon className="w-5 h-5 opacity-70" style={{ color: step.color }} />
+            <div className="w-full overflow-x-auto scrollbar-thin pb-4">
+              <div className="flex gap-4 min-w-[950px] lg:min-w-0 lg:w-full items-stretch">
+                {PIPELINE_STEPS.map((step, idx) => (
+                  <div key={idx} className="flex-1 dpi-card relative flex flex-col justify-between p-5 border border-[var(--border)] hover:border-[var(--border-strong)] transition-all">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[28px] font-mono font-bold tracking-tight opacity-10" style={{ color: step.color }}>
+                          {step.step}
+                        </span>
+                        <step.icon className="w-5 h-5 opacity-70" style={{ color: step.color }} />
+                      </div>
+                      <div>
+                        <h4 className="text-body-sm font-bold text-[var(--text)]">{step.title}</h4>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--text-muted)] block mt-0.5">
+                          {step.source}
+                        </span>
+                      </div>
+                      <p className="text-caption text-[var(--text-secondary)] leading-normal mt-2">
+                        {step.desc}
+                      </p>
                     </div>
-                    <div>
-                      <h4 className="text-body-sm font-bold text-[var(--text)]">{step.title}</h4>
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--text-muted)] block mt-0.5">
-                        {step.source}
-                      </span>
-                    </div>
-                    <p className="text-caption text-[var(--text-secondary)] leading-normal mt-2">
-                      {step.desc}
-                    </p>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Pipeline Depth Description */}
@@ -319,69 +321,71 @@ export default function AboutTab() {
         )}
 
         {activeSubTab === 'stack' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-            {/* Frontend Stack */}
-            <div className="dpi-card space-y-4">
-              <div className="flex items-center gap-2 text-body-sm font-semibold text-[var(--text)]">
-                <Code2 className="w-4.5 h-4.5 text-[var(--accent-blue)]" />
-                <span>Frontend Dashboard Engine</span>
+          <div className="w-full overflow-x-auto scrollbar-thin pb-4">
+            <div className="flex gap-6 min-w-[700px] md:min-w-0 md:w-full items-stretch">
+              {/* Frontend Stack */}
+              <div className="flex-1 dpi-card space-y-4">
+                <div className="flex items-center gap-2 text-body-sm font-semibold text-[var(--text)]">
+                  <Code2 className="w-4.5 h-4.5 text-[var(--accent-blue)]" />
+                  <span>Frontend Dashboard Engine</span>
+                </div>
+                <p className="text-caption text-[var(--text-secondary)]">
+                  Engineered as a lightweight, single-page dashboard designed for dense data layouts, low rendering-overhead, and high-frequency UI updates.
+                </p>
+                <div className="grid grid-cols-2 gap-3.5 pt-2">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Framework & Language</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Next.js 16 (App Router)</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">TypeScript 5.0</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Layout & Styles</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Tailwind CSS v4</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Framer Motion</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Charts & Telemetry</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Recharts Visualizations</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">SWR State Hydration</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">State Management</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Zustand Store</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">HTML5 Web Audio API</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-caption text-[var(--text-secondary)]">
-                Engineered as a lightweight, single-page dashboard designed for dense data layouts, low rendering-overhead, and high-frequency UI updates.
-              </p>
-              <div className="grid grid-cols-2 gap-3.5 pt-2">
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Framework & Language</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Next.js 16 (App Router)</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">TypeScript 5.0</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Layout & Styles</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Tailwind CSS v4</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Framer Motion</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Charts & Telemetry</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Recharts Visualizations</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">SWR State Hydration</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">State Management</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Zustand Store</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">HTML5 Web Audio API</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Backend Stack */}
-            <div className="dpi-card space-y-4">
-              <div className="flex items-center gap-2 text-body-sm font-semibold text-[var(--text)]">
-                <Award className="w-4.5 h-4.5 text-[var(--accent-violet)]" />
-                <span>Backend Processing Core</span>
-              </div>
-              <p className="text-caption text-[var(--text-secondary)]">
-                Powered by a multi-threaded Python engine acting as the telemetry aggregator, packet dissector, and machine learning scoring engine.
-              </p>
-              <div className="grid grid-cols-2 gap-3.5 pt-2">
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Core Engine</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Python Multi-Threading</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Scapy Packet Assembler</span>
+              {/* Backend Stack */}
+              <div className="flex-1 dpi-card space-y-4">
+                <div className="flex items-center gap-2 text-body-sm font-semibold text-[var(--text)]">
+                  <Award className="w-4.5 h-4.5 text-[var(--accent-violet)]" />
+                  <span>Backend Processing Core</span>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Driver Wrappers</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Npcap Packet Interceptor</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Kernel-Level Socket Sniffers</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">AI Classifier Core</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Scikit-Learn Classifier</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Random Forest Weights Matrix</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">API Telemetry Link</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">Threaded HTTP Web Server</span>
-                  <span className="text-caption text-[var(--text-secondary)] font-semibold block">JSON Data Serializers</span>
+                <p className="text-caption text-[var(--text-secondary)]">
+                  Powered by a multi-threaded Python engine acting as the telemetry aggregator, packet dissector, and machine learning scoring engine.
+                </p>
+                <div className="grid grid-cols-2 gap-3.5 pt-2">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Core Engine</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Python Multi-Threading</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Scapy Packet Assembler</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">Driver Wrappers</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Npcap Packet Interceptor</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Kernel-Level Socket Sniffers</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">AI Classifier Core</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Scikit-Learn Classifier</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Random Forest Weights Matrix</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase font-mono block">API Telemetry Link</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">Threaded HTTP Web Server</span>
+                    <span className="text-caption text-[var(--text-secondary)] font-semibold block">JSON Data Serializers</span>
+                  </div>
                 </div>
               </div>
             </div>

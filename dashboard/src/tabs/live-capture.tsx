@@ -358,7 +358,7 @@ export default function LiveCaptureTab() {
 
       {/* Virtualized live packet feed */}
       <div className="space-y-3">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="text-body-sm font-semibold text-[var(--text)] flex items-center gap-1.5">
             <ArrowDownWideNarrow className="w-4 h-4 text-[var(--accent-blue)]" />
             <span>Captured Frame Stream ({filteredPackets.length})</span>
@@ -388,13 +388,15 @@ export default function LiveCaptureTab() {
           </div>
         </div>
 
-        <DataTable
-          data={filteredPackets}
-          columns={columns}
-          rowKey={(p) => p.id}
-          actionField={(p) => p.action}
-          height="450px"
-        />
+        <div className="w-full overflow-hidden">
+          <DataTable
+            data={filteredPackets}
+            columns={columns}
+            rowKey={(p) => p.id}
+            actionField={(p) => p.action}
+            height="450px"
+          />
+        </div>
       </div>
     </div>
   );

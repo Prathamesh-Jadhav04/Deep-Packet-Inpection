@@ -3,18 +3,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { 
   Shield, 
-  Cpu, 
-  Network, 
-  Layers, 
-  Terminal, 
-  Info, 
-  ShieldAlert, 
-  Volume2, 
   Play, 
-  CheckCircle,
-  HelpCircle,
   AlertTriangle,
-  BookOpen
+  Zap,
+  Workflow,
+  BookOpen,
+  Activity,
+  Info
 } from 'lucide-react';
 import { playClickSound, playBurstSound, cn } from '@/lib/utils';
 
@@ -22,7 +17,7 @@ interface IntroOverlayProps {
   onEnter: () => void;
 }
 
-type IntroTab = 'overview' | 'features' | 'advanced' | 'limitations';
+type IntroTab = 'overview' | 'architecture' | 'benchmarks';
 
 interface Particle {
   x: number;
@@ -36,6 +31,15 @@ interface Particle {
   gravity: number;
 }
 
+const PIPELINE_NODES = [
+  { label: 'Packets', desc: 'Raw Ethernet/Loopback interface frames', badge: 'Ingress', color: 'var(--accent-blue)' },
+  { label: 'eBPF Fast Path', desc: 'Kernel-level BPF expressions filter', badge: 'Kernel', color: 'var(--accent-cyan)' },
+  { label: 'DPI Engine', desc: 'Stateful protocol dissection & flag scan', badge: 'Parser', color: 'var(--accent-violet)' },
+  { label: 'ETI Classifier', desc: 'Random Forest AI application signature profiling', badge: 'AI Classifier', color: 'var(--accent-violet)' },
+  { label: 'Policy Engine V2', desc: 'Threat intelligence & dynamic enforcer rules check', badge: 'Core Policy', color: 'var(--accent-amber)' },
+  { label: 'Alert / Block / Log', desc: 'MITRE ATT&CK tagged threat logs & drop verdicts', badge: 'Verdict', color: 'var(--accent-red)' }
+];
+
 export function IntroOverlay({ onEnter }: IntroOverlayProps) {
   const [activeTab, setActiveTab] = useState<IntroTab>('overview');
   const [isBursting, setIsBursting] = useState(false);
@@ -43,15 +47,12 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const animationFrameId = useRef<number | null>(null);
   const particles = useRef<Particle[]>([]);
-  const revealRadius = useRef(0);
-  const maxRevealRadius = useRef(0);
 
   const handleTabChange = (tab: IntroTab) => {
     setActiveTab(tab);
     playClickSound();
   };
 
-  // Resize canvas to full screen
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
@@ -68,7 +69,7 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
     if (isBursting) return;
     setIsBursting(true);
     
-    // Play the synthesized cyber-burst sound
+    // Play sound
     playBurstSound();
 
     const canvas = canvasRef.current;
@@ -84,33 +85,11 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
       return;
     }
 
-    // Get button position
     const rect = button.getBoundingClientRect();
     const btnCenterX = rect.left + rect.width / 2;
     const btnCenterY = rect.top + rect.height / 2;
 
-    // Calculate maximum reveal radius to cover the entire screen from the button center
-    const corners = [
-      { x: 0, y: 0 },
-      { x: window.innerWidth, y: 0 },
-      { x: 0, y: window.innerHeight },
-      { x: window.innerWidth, y: window.innerHeight }
-    ];
-    let maxDist = 0;
-    corners.forEach(c => {
-      const dist = Math.sqrt(Math.pow(c.x - btnCenterX, 2) + Math.pow(c.y - btnCenterY, 2));
-      if (dist > maxDist) maxDist = dist;
-    });
-    maxRevealRadius.current = maxDist + 100; // Extra buffer
-
-    // Generate particles
-    const colors = [
-      '#3b82f6', // blue
-      '#a855f7', // violet
-      '#f43f5e', // red
-      '#06b6d4', // cyan
-      '#ffffff'  // white
-    ];
+    const colors = ['#3b82f6', '#a855f7', '#f43f5e', '#06b6d4', '#ffffff'];
 
     for (let i = 0; i < 75; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -119,7 +98,7 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
         x: btnCenterX,
         y: btnCenterY,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - (1 + Math.random() * 2), // slight upward bias
+        vy: Math.sin(angle) * speed - (1 + Math.random() * 2),
         size: 1.5 + Math.random() * 4,
         color: colors[Math.floor(Math.random() * colors.length)],
         alpha: 1,
@@ -128,7 +107,6 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
       });
     }
 
-    // Particle/Reveal animation loop
     let startTime: number | null = null;
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
@@ -136,38 +114,32 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update and draw particles
-      particles.current.forEach((p, idx) => {
+      particles.current.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += p.gravity; // apply gravity
-        p.vx *= 0.98;      // air resistance
+        p.vy += p.gravity;
+        p.vx *= 0.98;
         p.vy *= 0.98;
         p.alpha -= p.decay;
         p.size *= 0.98;
 
         if (p.alpha > 0 && p.size > 0.1) {
           ctx.save();
-          
-          // Soft outer glow circle (highly efficient double-pass glow)
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
           ctx.globalAlpha = p.alpha * 0.22;
           ctx.fill();
 
-          // Bright inner core
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
           ctx.globalAlpha = p.alpha;
           ctx.fill();
-          
           ctx.restore();
         }
       });
 
-      // Draw shockwave rings
       if (elapsed < 600) {
         ctx.save();
         ctx.beginPath();
@@ -184,7 +156,6 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
 
     animationFrameId.current = requestAnimationFrame(animate);
 
-    // Fade out overlay and unmount after 800ms transition completes
     setTimeout(() => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -193,237 +164,272 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
     }, 800);
   };
 
-  // Cleanup animations on unmount
-  useEffect(() => {
-    return () => {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-    };
-  }, []);
-
   return (
     <div className={cn(
       "fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4 select-none transition-all duration-[800ms] ease-out",
-      isBursting ? "opacity-0 pointer-events-none scale-[1.02] blur-xs" : "opacity-100 bg-[#0a0a0a]"
+      isBursting ? "opacity-0 pointer-events-none scale-[1.02] blur-xs bg-transparent" : "opacity-100 bg-[var(--bg)]"
     )}>
-      {/* Background canvas for the explosion and reveal wipe */}
-      <canvas 
-        ref={canvasRef} 
-        className="absolute inset-0 pointer-events-none z-20"
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-20" />
 
+      {/* Unified Card utilizing internal UI theme */}
       <div className={cn(
-        "relative z-10 w-full max-w-[850px] max-h-[95vh] md:max-h-none bg-[var(--panel)] border border-[var(--border-strong)] rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden transition-all duration-700",
+        "relative z-10 w-full max-w-[760px] max-h-[95vh] md:max-h-none dpi-card flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-700",
         isBursting && "scale-95 opacity-0 pointer-events-none blur-md"
       )}>
         
-        {/* Left Side: App Intro Banner */}
-        <div className="w-full md:w-[280px] bg-linear-to-b from-[var(--bg-soft)] to-[var(--panel-soft)] border-b md:border-b-0 md:border-r border-[var(--border)] p-5 md:p-6 flex md:flex-col justify-between flex-shrink-0 items-center md:items-start gap-4">
-          <div className="flex md:flex-col items-center md:items-start gap-3 flex-1 md:flex-none">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-[var(--accent-blue-soft)] border border-[var(--accent-blue)]/20 shadow-[0_0_15px_var(--accent-blue-soft)] flex-shrink-0">
-              <Shield className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent-blue)] animate-pulse" />
+        {/* Console Header */}
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-4 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center justify-center flex-shrink-0">
+              <span className="absolute w-8 h-8 rounded-full bg-[var(--accent-blue)]/10 animate-pulse" />
+              <div className="relative w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--panel-soft)] border border-[var(--border-strong)] shadow-sm z-10">
+                <Shield className="w-4.5 h-4.5 text-[var(--accent-blue)]" />
+              </div>
             </div>
-            <div className="space-y-0.5 text-left">
-              <h1 className="text-[18px] md:text-[20px] font-bold tracking-tight text-[var(--text)]">DPI Engine</h1>
-              <p className="text-[9px] md:text-caption text-[var(--text-muted)] font-mono uppercase tracking-wider">
-                Verdict Shield v2.0
+            <div className="text-left">
+              <h1 className="text-[14px] md:text-[15px] font-bold tracking-[2px] text-[var(--text)] uppercase font-sans">
+                Deep Packet Inspection Console
+              </h1>
+              <p className="text-[9px] text-[var(--text-muted)] font-mono uppercase tracking-[1.5px] font-semibold mt-0.5">
+                Verdict Shield Platform v2.0 • Operator Deck
               </p>
             </div>
           </div>
-          <p className="hidden md:block text-[12px] text-[var(--text-secondary)] leading-relaxed">
-            Unlock a granular window into loopback socket streams, classifying web flows with machine learning models and implementing hardware-level packet drop verdicts.
-          </p>
-          <div className="hidden md:flex pt-6 border-t border-[var(--border-subtle)] text-[10px] text-[var(--text-muted)] font-mono items-center gap-1.5 w-full">
-            <Info className="w-3.5 h-3.5 text-[var(--accent-blue)] flex-shrink-0" />
-            <span>Developer Sandbox Environment</span>
-          </div>
+          <span className="hidden sm:inline-block text-[9px] font-mono px-2 py-0.5 rounded border border-[var(--border-strong)] bg-[var(--panel-soft)] text-[var(--text-muted)]">
+            SECURE ENVIRONMENT
+          </span>
         </div>
 
-        {/* Right Side: Interactive Walkthrough and Enter Button */}
-        <div className="flex-1 flex flex-col justify-between p-5 md:p-6 h-[400px] sm:h-[450px] md:h-[500px]">
-          {/* Header Subtabs */}
-          <div className="flex border-b border-[var(--border-subtle)] gap-4 pb-0.5 overflow-x-auto scrollbar-none">
-            {(['overview', 'features', 'advanced', 'limitations'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabChange(tab)}
-                className={cn(
-                  "pb-2 text-caption font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap text-[12px] md:text-caption",
-                  activeTab === tab
-                    ? "border-[var(--accent-blue)] text-[var(--text)]"
-                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                )}
-              >
-                {tab === 'overview' && 'Overview'}
-                {tab === 'features' && 'Feature Guide'}
-                {tab === 'advanced' && 'Advanced Specs'}
-                {tab === 'limitations' && 'Limitations'}
-              </button>
-            ))}
-          </div>
-
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin my-4 pr-1.5 space-y-4">
-            
-            {activeTab === 'overview' && (
-              <div className="space-y-3.5 animate-fade-in text-[13px]">
-                <div className="flex items-start gap-2.5">
-                  <BookOpen className="w-4 h-4 text-[var(--accent-blue)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Core Purpose</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                      Designed as an inspection portal for network operators. It establishes kernel-level bridges to sniff raw interface adapters, reconstructing frames into stateful bidirectional flow streams.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-[var(--accent-green)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Telemetry Feedback Loop</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                      Packets are analyzed, scored via a classifier model, and checked against drop rules. If a drop matches, execution fires drop instructions, reflecting in dashboard charts immediately.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-[var(--panel-soft)] p-3 rounded-lg border border-[var(--border)] text-[12px] text-[var(--text-secondary)] mt-2">
-                  <span className="font-semibold text-[var(--text)] block mb-1">How it Operates:</span>
-                  1. Sniffs raw Ethernet/Loopback adapters.<br />
-                  2. Feeds statistics to Random Forest classification matrices.<br />
-                  3. Drops packets fitting block rules, updating UI verdict metrics.
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'features' && (
-              <div className="space-y-3.5 animate-fade-in text-[13px]">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] space-y-1">
-                    <span className="font-semibold text-[var(--text)] block text-[12px]">1. Overview Page</span>
-                    <p className="text-[11px] text-[var(--text-secondary)] leading-normal">
-                      Provides rolling bandwidth charts (Mbps), packets-per-second, and thread load distributions.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] space-y-1">
-                    <span className="font-semibold text-[var(--text)] block text-[12px]">2. Live Capture</span>
-                    <p className="text-[11px] text-[var(--text-secondary)] leading-normal">
-                      Hooks to interfaces (WiFi/Ethernet) to write log tables and stream raw hex outputs.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] space-y-1">
-                    <span className="font-semibold text-[var(--text)] block text-[12px]">3. Blocking Rules</span>
-                    <p className="text-[11px] text-[var(--text-secondary)] leading-normal">
-                      Blacklist enforcer panel. Block traffic by specific IP, Domain SNI patterns, or Application tags.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] space-y-1">
-                    <span className="font-semibold text-[var(--text)] block text-[12px]">4. Traffic Analytics</span>
-                    <p className="text-[11px] text-[var(--text-secondary)] leading-normal">
-                      Presents Top Talkers traffic bandwidth, Radial Layer 4 transport divisions, and SNI domain logs.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] space-y-1">
-                  <span className="font-semibold text-[var(--text)] block text-[12px]">5. Flow Inspector</span>
-                  <p className="text-[11px] text-[var(--text-secondary)] leading-normal">
-                    Inspects aggregated 5-tuple conversations containing first/last active timestamps, TLS client hello JA3/JA4 fingerprints, and deep payload hex streams.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'advanced' && (
-              <div className="space-y-3.5 animate-fade-in text-[13px]">
-                <div className="flex items-start gap-2.5">
-                  <Cpu className="w-4 h-4 text-[var(--accent-violet)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Machine Learning Classification</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed text-[12px]">
-                      Features an embedded **Random Forest Classifier** that evaluates packet sizes, variations, and inter-arrival timing signatures to output app tags (Google, Netflix, YouTube) without parsing encrypted payload bodies.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <Layers className="w-4 h-4 text-[var(--accent-cyan)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Multi-Threaded Ring Buffer</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed text-[12px]">
-                      Implements a circular producer-consumer ring buffer layout. Decouples raw interface sniffer interrupts from heavier statistical parsing threads, reducing queue bottlenecks.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <Terminal className="w-4 h-4 text-[var(--accent-blue)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Stateful Protocol Inspections</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed text-[12px]">
-                      Validates TCP flags for anomalies (such as Null and Xmas port scans) and evaluates payload data randomness using Shannon entropy to block DNS tunneling and hidden exfiltration vectors.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'limitations' && (
-              <div className="space-y-3.5 animate-fade-in text-[13px]">
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-[var(--accent-blue)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Dynamic CPU Safety Shield</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                      To protect system processor cores from heavy capture loops, the backend sniffer applies micro-sleep filters and logs simulated load metrics under stress. This sandbox allows seamless verification without overloading your system.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-[var(--accent-blue)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Local Sniffing Boundaries</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                      Captures are bounded strictly to selected local interfaces (Ethernet, Wi-Fi, Loopback). This provides a completely self-contained network sandbox, safeguarding personal privacy.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-[var(--accent-blue)] flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <span className="font-semibold text-[var(--text)]">Promiscuous Mode Permissioning</span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                      Interacting with raw packet captures requires running the CLI server with administrative privileges (sudo/root) to hook the socket driver correctly.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
-
-          {/* Footer Enter Button */}
-          <div className="border-t border-[var(--border-subtle)] pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="text-[10px] md:text-[11px] text-[var(--text-muted)] font-mono">
-              Ready to initialize console?
-            </span>
-            
+        {/* Minimal Underlined Navigation Tabs */}
+        <div className="flex border-b border-[var(--border)] gap-6 mb-4 select-none flex-shrink-0">
+          {(['overview', 'architecture', 'benchmarks'] as const).map((tab) => (
             <button
-              ref={buttonRef}
-              onClick={handleEnterClick}
-              disabled={isBursting}
+              key={tab}
+              onClick={() => handleTabChange(tab)}
               className={cn(
-                "relative overflow-hidden cursor-pointer select-none font-semibold text-body-sm px-5 py-2 md:px-6 md:py-2.5 rounded-full border border-[var(--accent-blue)] bg-[var(--accent-blue-soft)] text-[var(--text)] shadow-[0_0_15px_var(--accent-blue-soft)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 w-full sm:w-auto",
-                isBursting && "scale-75 opacity-0 pointer-events-none blur-sm"
+                "pb-2.5 text-caption font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap text-[12.5px] relative",
+                activeTab === tab
+                  ? "border-[var(--accent-blue)] text-[var(--text)]"
+                  : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text)] opacity-60 hover:opacity-100"
               )}
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Initialize Console</span>
+              {tab === 'overview' && 'System Overview'}
+              {tab === 'architecture' && 'Pipeline & Stack'}
+              {tab === 'benchmarks' && 'Metrics & Limits'}
             </button>
+          ))}
+        </div>
+
+        {/* Console Content Area */}
+        <div className="h-[280px] sm:h-[300px] md:h-[320px] overflow-y-auto scrollbar-thin pr-1.5 my-1 space-y-4">
+          
+          {activeTab === 'overview' && (
+            <div className="space-y-4 animate-fade-in text-[13px]">
+              {/* One-liner Hook */}
+              <div className="p-3.5 rounded-lg border-l-[3px] border-[var(--accent-blue)] bg-[var(--panel-soft)] text-left relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--accent-blue)]/5 rounded-full blur-xl -mr-6 -mt-6 pointer-events-none" />
+                <p className="text-[13px] font-medium tracking-tight text-[var(--text)] leading-relaxed italic opacity-95">
+                  "A kernel-aware, ML-augmented network security platform that classifies encrypted traffic without decryption."
+                </p>
+              </div>
+
+              {/* Differentiators list */}
+              <div className="space-y-3">
+                <h3 className="text-[10px] font-bold text-[var(--accent-blue)] uppercase font-mono tracking-wider">
+                  Core capabilities (vs Wireshark / Suricata)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[var(--panel-soft)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="w-2.5 h-2.5 text-[var(--accent-blue)]" />
+                    </div>
+                    <p className="text-[var(--text-secondary)] leading-normal text-[12px]">
+                      <strong>Behavioral C2 Analysis:</strong> Identifies encrypted command & control botnet traffic dynamically without decryption.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[var(--panel-soft)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="w-2.5 h-2.5 text-[var(--accent-blue)]" />
+                    </div>
+                    <p className="text-[var(--text-secondary)] leading-normal text-[12px]">
+                      <strong>JA3/JA4 Fingerprints:</strong> Inspects TLS handshake profiles using Salesforce & Cloudflare style GREASE filters.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[var(--panel-soft)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="w-2.5 h-2.5 text-[var(--accent-blue)]" />
+                    </div>
+                    <p className="text-[var(--text-secondary)] leading-normal text-[12px]">
+                      <strong>MITRE ATT&CK Tagging:</strong> Feeds alerts mapped to threat matrices (T1071 C2, T1046 Scan, T1498 DDoS).
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[var(--panel-soft)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="w-2.5 h-2.5 text-[var(--accent-blue)]" />
+                    </div>
+                    <p className="text-[var(--text-secondary)] leading-normal text-[12px]">
+                      <strong>RFC 7011 IPFIX Stream:</strong> Exports standard flow data directly into Splunk, Elastic, or QRadar.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inspired By references */}
+              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-[10px] text-[var(--text-muted)] font-mono">
+                <span>Inspired by:</span>
+                <span className="font-semibold text-[var(--text-secondary)]">
+                  Zeek · Suricata · Cloudflare Gateway · Cisco ETA
+                </span>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'architecture' && (
+            <div className="space-y-4 animate-fade-in text-[13px]">
+              {/* High-fidelity visual pipeline timeline list */}
+              <div className="space-y-2.5">
+                <h3 className="text-[10px] font-bold text-[var(--accent-cyan)] uppercase font-mono tracking-wider">
+                  Pipeline Execution Steps
+                </h3>
+                
+                <div className="space-y-0">
+                  {PIPELINE_NODES.map((node, idx) => (
+                    <div key={idx} className="flex flex-col">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-[11px] border flex-shrink-0 z-10"
+                          style={{ 
+                            borderColor: `${node.color}33`, 
+                            backgroundColor: `${node.color}11`, 
+                            color: node.color 
+                          }}
+                        >
+                          {idx + 1}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0 p-2.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] flex items-center justify-between gap-4 hover:border-[var(--border-strong)] transition-all">
+                          <div className="min-w-0">
+                            <span className="font-semibold text-[var(--text)] text-[12px] block truncate">{node.label}</span>
+                            <span className="text-[11px] text-[var(--text-muted)] block truncate">{node.desc}</span>
+                          </div>
+                          <span 
+                            className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider border flex-shrink-0"
+                            style={{
+                              borderColor: `${node.color}33`,
+                              backgroundColor: `${node.color}11`,
+                              color: node.color
+                            }}
+                          >
+                            {node.badge}
+                          </span>
+                        </div>
+                      </div>
+                      {idx < PIPELINE_NODES.length - 1 && (
+                        <div className="w-7 flex justify-center py-1 flex-shrink-0">
+                          <div className="w-0.5 h-4 border-l-2 border-dotted border-[var(--border-strong)] opacity-40" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Technology Stack chips */}
+              <div className="space-y-2.5">
+                <h3 className="text-[10px] font-bold text-[var(--accent-cyan)] uppercase font-mono tracking-wider">
+                  Engine tech stack
+                </h3>
+                <div className="flex flex-wrap gap-2 select-none">
+                  {[
+                    'Python', 'eBPF/XDP', 'FastAPI', 'Redis', 
+                    'ONNX Runtime', 'MaxMind GeoIP', 'OpenTelemetry', 
+                    'Next.js', 'Docker', 'Scapy'
+                  ].map((tech) => (
+                    <span 
+                      key={tech} 
+                      className="px-2.5 py-1 text-[11px] font-mono font-semibold rounded border border-[var(--border)] bg-[var(--panel-soft)] text-[var(--text-secondary)] shadow-sm hover:border-[var(--border-strong)] hover:text-[var(--text)] transition-all duration-350 cursor-default"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'benchmarks' && (
+            <div className="space-y-4 animate-fade-in text-[13px]">
+              {/* Benchmark Numbers Bento Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 select-none">
+                <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
+                  <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">Throughput</span>
+                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">4,800+ pps</span>
+                </div>
+                <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
+                  <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">ETI Inference</span>
+                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">&lt;10ms</span>
+                </div>
+                <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
+                  <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">TLS Tracking</span>
+                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">100% flows</span>
+                </div>
+                <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
+                  <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">Threat Maps</span>
+                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">6 Techniques</span>
+                </div>
+              </div>
+
+              {/* Limitations & Known Tradeoffs */}
+              <div className="p-3.5 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] space-y-2.5">
+                <h3 className="text-[10px] font-bold text-[var(--accent-red)] uppercase font-mono tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-[var(--accent-red)]" />
+                  <span>Limitations & Tradeoffs</span>
+                </h3>
+                <div className="space-y-2 text-[11.5px] leading-relaxed">
+                  <div className="flex items-start gap-2">
+                    <span className="text-[var(--accent-red)] font-bold font-mono">→</span>
+                    <p className="text-[var(--text-secondary)]">
+                      <strong>eBPF Platform bounds:</strong> BPF fast path hooks are Linux-only. Windows deployment operates under Scapy loop fallback mode.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-[var(--accent-red)] font-bold font-mono">→</span>
+                    <p className="text-[var(--text-secondary)]">
+                      <strong>Model Training Bias:</strong> ETI Random Forest is trained on synthetic traces. CICIDS dataset integration is currently W.I.P.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-[var(--accent-red)] font-bold font-mono">→</span>
+                    <p className="text-[var(--text-secondary)]">
+                      <strong>HPACK Decoder Range:</strong> Decodes static header indexes only. Live dynamic session state updates are unsupported.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer & Shimmer Enter Button */}
+        <div className="border-t border-[var(--border)] pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 mt-2 flex-shrink-0">
+          <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-mono">
+            <Info className="w-3.5 h-3.5 text-[var(--accent-blue)]" />
+            <span>Authorized Operators Only • Npcap driver required</span>
           </div>
+          
+          <button
+            ref={buttonRef}
+            onClick={handleEnterClick}
+            disabled={isBursting}
+            className={cn(
+              "btn-primary flex-shrink-0 cursor-pointer w-full sm:w-auto relative overflow-hidden transition-all duration-300 hover:opacity-90 active:scale-95 flex items-center justify-center gap-2",
+              isBursting && "scale-75 opacity-0 pointer-events-none blur-sm"
+            )}
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>Initialize Console</span>
+          </button>
         </div>
 
       </div>

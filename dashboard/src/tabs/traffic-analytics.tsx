@@ -161,7 +161,7 @@ export default function TrafficAnalyticsTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Talkers (IPs by Bytes) */}
-        <div>
+        <div className="min-w-0">
           <ChartContainer
             title="Top Talkers (Bytes Volume)"
             subtitle="IP addresses generating the highest traffic load"
@@ -198,7 +198,7 @@ export default function TrafficAnalyticsTab() {
         </div>
 
         {/* Port Matrix Distribution */}
-        <div>
+        <div className="min-w-0">
           <ChartContainer
             title="Destination Ports Activity"
             subtitle="Traffic frame density per destination port"
@@ -226,7 +226,7 @@ export default function TrafficAnalyticsTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Protocol Dial/Radial Chart */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 min-w-0">
           <ChartContainer
             title="Layer 4 Protocols"
             subtitle="Distribution of TCP vs UDP transport streams"
@@ -265,7 +265,7 @@ export default function TrafficAnalyticsTab() {
         </div>
 
         {/* Classified Domains context table */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           <div className="dpi-card flex flex-col" style={{ height: '364px' }}>
             <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-3 mb-3">
               <Globe2 className="w-4 h-4 text-[var(--accent-blue)]" />
@@ -293,7 +293,11 @@ export default function TrafficAnalyticsTab() {
                     <tbody>
                       {data.domains.map((dom, idx) => (
                         <tr key={idx}>
-                          <td className="font-mono text-body-sm text-[var(--text)]">{dom.domain}</td>
+                          <td className="font-mono text-body-sm text-[var(--text)]">
+                            <div className="truncate max-w-[150px] sm:max-w-[250px] md:max-w-none" title={dom.domain}>
+                              {dom.domain}
+                            </div>
+                          </td>
                           <td>
                             <span className="dpi-badge dpi-badge-info py-0 px-2 font-semibold">
                               {dom.app}

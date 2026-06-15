@@ -35,6 +35,7 @@ export interface PacketEntry {
   ja3: string;
   ja4: string;
   eti: string;
+  country?: string;
 }
 
 export interface RulesSnapshot {
@@ -49,6 +50,8 @@ export interface AnomalyEntry {
   description: string;
   flow: string;
   app: string;
+  mitre_id?: string;
+  mitre_technique?: string;
 }
 
 export interface AnalyticsData {
@@ -132,6 +135,7 @@ export interface FlowRecord {
   ja3: string;
   ja4: string;
   eti: string;
+  country: string;
 }
 
 // Time-series data point for charts

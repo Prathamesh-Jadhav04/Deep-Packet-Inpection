@@ -161,3 +161,41 @@ We have introduced a simplified and extremely user-friendly command-line wrapper
 # 4. View active alerts (e.g. if any DNS Tunneling or SYN Floods are detected)
 .\dpi alerts
 ```
+
+---
+
+## 5. Linux-Only High-Performance Packet Dropping (eBPF XDP/TC Roadmap)
+
+While the Python-based engine utilizes Scapy and Npcap for cross-platform packet acquisition and active response (via spoofed TCP RST and ICMP Unreachable injections), high-throughput production environments require in-kernel packet filtering to prevent CPU exhaustion. 
+
+We map the production Linux roadmap using **eBPF (Extended Berkeley Packet Filter)**:
+
+### 5.1. Kernel-Space Dropping with XDP (eXpress Data Path)
+- **Hooks:** An XDP program is attached directly to the network driver's receive ring buffer (`ingress`). It executes before the kernel allocates the socket buffer metadata (`sk_buff`), enabling drops at line rate.
+- **BPF Maps:** The user-space Python engine populates a hash map (`BPF_MAP_TYPE_HASH` or trie map `BPF_MAP_TYPE_LPM_TRIE`) containing blocked IPs, domains, or port patterns.
+- **Action:** The XDP kernel program performs header parsing. If the source/destination IP matches a key in the block list map, it returns `XDP_DROP` immediately; otherwise, it returns `XDP_PASS`.
+
+### 5.2. Drop Statistics Exposure
+- **Stats Counter Map:** A global BPF array map (`BPF_MAP_TYPE_ARRAY` of key size 1, value size `u64`) tracks total dropped packets.
+- **Kernel Code Snippet (C):**
+  ```c
+  SEC("xdp")
+  int xdp_drop_blocklist(struct xdp_md *ctx) {
+      void *data_end = (void *)(long)ctx->data_end;
+      void *data = (void *)(long)ctx->data;
+      
+      // Parse Ethernet, IP, and TCP headers...
+      // Lookup IP in blocklist map
+      if (bpf_map_lookup_elem(&blocklist_map, &src_ip)) {
+          // Increment drop counter
+          int key = 0;
+          __u64 *value = bpf_map_lookup_elem(&drop_counter_map, &key);
+          if (value) {
+              __sync_fetch_and_add(value, 1);
+          }
+          return XDP_DROP;
+      }
+      return XDP_PASS;
+  }
+  ```
+- **User-Space Retrieval:** The user-space engine uses `bcc` or `libbpf` bindings in Python to read the `drop_counter_map` periodically, feeding real-time drop count metrics to the Observability dashboard.
