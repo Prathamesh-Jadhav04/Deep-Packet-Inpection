@@ -134,12 +134,11 @@ TLS Client Hello:
                     └─────────────┘
 ```
 
-### Two Versions
+### Implementation
 
 | Version | File | Use Case |
 |---------|------|----------|
-| Simple (Single-threaded) | `src/main_working.cpp` | Learning, small captures |
-| Multi-threaded | `src/dpi_mt.cpp` | Production, large captures |
+| Python DPI Engine | `dpi_engine.py` | All use cases |
 
 ---
 
@@ -147,37 +146,19 @@ TLS Client Hello:
 
 ```
 packet_analyzer/
-├── include/                    # Header files (declarations)
-│   ├── pcap_reader.h          # PCAP file reading
-│   ├── packet_parser.h        # Network protocol parsing
-│   ├── sni_extractor.h        # TLS/HTTP inspection
-│   ├── types.h                # Data structures (FiveTuple, AppType, etc.)
-│   ├── rule_manager.h         # Blocking rules (multi-threaded version)
-│   ├── connection_tracker.h   # Flow tracking (multi-threaded version)
-│   ├── load_balancer.h        # LB thread (multi-threaded version)
-│   ├── fast_path.h            # FP thread (multi-threaded version)
-│   ├── thread_safe_queue.h    # Thread-safe queue
-│   └── dpi_engine.h           # Main orchestrator
-│
-├── src/                        # Implementation files
-│   ├── pcap_reader.cpp        # PCAP file handling
-│   ├── packet_parser.cpp      # Protocol parsing
-│   ├── sni_extractor.cpp      # SNI/Host extraction
-│   ├── types.cpp              # Helper functions
-│   ├── main_working.cpp       # ★ SIMPLE VERSION ★
-│   ├── dpi_mt.cpp             # ★ MULTI-THREADED VERSION ★
-│   └── [other files]          # Supporting code
-│
-├── generate_test_pcap.py      # Creates test data
-├── test_dpi.pcap              # Sample capture with various traffic
-└── README.md                  # This file!
+├── dpi_engine.py               # Main DPI engine (multi-threaded)
+├── generate_test_pcap.py       # Creates test data
+├── test_dpi.pcap               # Sample capture with various traffic
+├── output.pcap                 # Processed output
+├── live_output.pcap            # Live capture output
+└── README.md                   # This file!
 ```
 
 ---
 
 ## 5. The Journey of a Packet (Simple Version)
 
-Let's trace a single packet through `main_working.cpp`:
+Let's trace a single packet through `dpi_engine.py`:
 
 ### Step 1: Read PCAP File
 
@@ -562,7 +543,7 @@ class TSQueue {
 
 ## 7. Deep Dive: Each Component
 
-### pcap_reader.h / pcap_reader.cpp
+### PcapReader
 
 **Purpose:** Read network captures saved by Wireshark
 
@@ -589,7 +570,7 @@ struct PcapPacketHeader {
 - `readNextPacket(raw)`: Read next packet into buffer
 - `close()`: Clean up
 
-### packet_parser.h / packet_parser.cpp
+### PacketParser
 
 **Purpose:** Extract protocol fields from raw bytes
 
@@ -615,7 +596,7 @@ uint16_t port = ntohs(*(uint16_t*)(data + offset));
 uint32_t seq = ntohl(*(uint32_t*)(data + offset));
 ```
 
-### sni_extractor.h / sni_extractor.cpp
+### SNIExtractor / HTTPHostExtractor / DNSExtractor
 
 **Purpose:** Extract domain names from TLS and HTTP
 
@@ -645,7 +626,7 @@ std::optional<std::string> HTTPHostExtractor::extract(
 }
 ```
 
-### types.h / types.cpp
+### Data Structures (FiveTuple, AppType)
 
 **Purpose:** Define data structures used throughout
 
@@ -862,46 +843,22 @@ Connection to YouTube:
 
 ---
 
-## 10. Building and Running
+## 10. Running
 
 ### Prerequisites
 
-- **macOS/Linux** with C++17 compiler
-- **g++** or **clang++**
-- No external libraries needed!
+- **Python 3.8+** (no external libraries needed!)
 
-### Build Commands
+### Basic Usage
 
-**Simple Version:**
 ```bash
-g++ -std=c++17 -O2 -I include -o dpi_simple \
-    src/main_working.cpp \
-    src/pcap_reader.cpp \
-    src/packet_parser.cpp \
-    src/sni_extractor.cpp \
-    src/types.cpp
+python dpi_engine.py test_dpi.pcap output.pcap
 ```
 
-**Multi-threaded Version:**
-```bash
-g++ -std=c++17 -pthread -O2 -I include -o dpi_engine \
-    src/dpi_mt.cpp \
-    src/pcap_reader.cpp \
-    src/packet_parser.cpp \
-    src/sni_extractor.cpp \
-    src/types.cpp
-```
+### With Blocking
 
-### Running
-
-**Basic usage:**
 ```bash
-./dpi_engine test_dpi.pcap output.pcap
-```
-
-**With blocking:**
-```bash
-./dpi_engine test_dpi.pcap output.pcap \
+python dpi_engine.py test_dpi.pcap output.pcap \
     --block-app YouTube \
     --block-app TikTok \
     --block-ip 192.168.1.50 \
@@ -997,29 +954,26 @@ python3 generate_test_pcap.py
 ### Ideas for Improvement
 
 1. **Add More App Signatures**
-   ```cpp
-   // In types.cpp
-   if (sni.find("twitch") != std::string::npos)
-       return AppType::TWITCH;
+   ```python
+   # In sni_to_app_type()
+   if "twitch" in lower_sni:
+       return AppType.TWITCH
    ```
 
 2. **Add Bandwidth Throttling**
-   ```cpp
-   // Instead of DROP, delay packets
-   if (shouldThrottle(flow)) {
-       std::this_thread::sleep_for(10ms);
-   }
+   ```python
+   # Instead of dropping, delay packets
+   if should_throttle(flow):
+       time.sleep(0.01)
    ```
 
 3. **Add Live Statistics Dashboard**
-   ```cpp
-   // Separate thread printing stats every second
-   void statsThread() {
-       while (running) {
-           printStats();
-           sleep(1);
-       }
-   }
+   ```python
+   # Separate thread printing stats every second
+   def stats_thread():
+       while running:
+           print_stats()
+           time.sleep(1)
    ```
 
 4. **Add QUIC/HTTP3 Support**
@@ -1048,6 +1002,6 @@ The key insight is that even HTTPS traffic leaks the destination domain in the T
 
 ## Questions?
 
-If you have questions about any part of this project, the code is well-commented and follows the same flow described in this document. Start with the simple version (`main_working.cpp`) to understand the concepts, then move to the multi-threaded version (`dpi_mt.cpp`) to see how parallelism is added.
+If you have questions about any part of this project, the code is well-commented and follows the same flow described in this document. Start by reading `dpi_engine.py` to understand the pipeline.
 
 Happy learning! 🚀

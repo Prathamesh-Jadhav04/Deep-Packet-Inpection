@@ -1,0 +1,73 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useDPIStore } from '@/store/dpi-store';
+import { NavBar } from '@/components/dpi/nav-bar';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Dynamic / lazy import could also be used, but direct imports are reliable and compact
+import OverviewTab from '@/tabs/overview';
+import LiveCaptureTab from '@/tabs/live-capture';
+import BlockingRulesTab from '@/tabs/blocking-rules';
+import TrafficAnalyticsTab from '@/tabs/traffic-analytics';
+import FlowInspectorTab from '@/tabs/flow-inspector';
+import SettingsTab from '@/tabs/settings';
+
+const TAB_COMPONENTS = [
+  OverviewTab,
+  LiveCaptureTab,
+  BlockingRulesTab,
+  TrafficAnalyticsTab,
+  FlowInspectorTab,
+  SettingsTab,
+];
+
+export default function Home() {
+  const { activeTab, apiBase, setApiBase } = useDPIStore();
+  const ActiveTabComponent = TAB_COMPONENTS[activeTab] || OverviewTab;
+
+  // Automatically sync API base with the current origin to prevent port mismatches
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentOrigin = window.location.origin;
+      if (window.location.port === '8765' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
+        if (apiBase !== currentOrigin) {
+          setApiBase(currentOrigin);
+        }
+      } else if (window.location.port === '3000' && apiBase.includes(':3000')) {
+        setApiBase('http://127.0.0.1:8765');
+      }
+    }
+  }, [apiBase, setApiBase]);
+
+  return (
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans transition-colors duration-200">
+      {/* Top sticky navigation bar */}
+      <NavBar />
+
+      {/* Main dashboard tab panel layout */}
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-6 py-6 focus:outline-none">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            role="tabpanel"
+            id={`tabpanel-${activeTab}`}
+            aria-labelledby={`tab-${activeTab}`}
+            className="w-full h-full min-h-[400px]"
+          >
+            <ActiveTabComponent />
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      {/* Footer info */}
+      <footer className="border-t border-[var(--border-subtle)] py-4 text-center text-[10px] text-[var(--text-muted)] font-mono">
+        DPI Engine Console v2.0 • Advanced Packet Classification & Enforcer Panel
+      </footer>
+    </div>
+  );
+}
