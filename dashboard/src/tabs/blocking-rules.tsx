@@ -5,6 +5,7 @@ import { useDPIRules } from '@/hooks/useDPIRules';
 import { useDPIStats } from '@/hooks/useDPIStats';
 import { Shield, Plus, Trash2, Search, FileDown, AlertCircle, CheckCircle } from 'lucide-react';
 import type { RuleType } from '@/types/dpi';
+import { cn, playClickSound } from '@/lib/utils';
 
 const detectRuleType = (value: string): RuleType => {
   const clean = value.trim().toLowerCase();
@@ -130,7 +131,10 @@ export default function BlockingRulesTab() {
           </p>
         </div>
         <button
-          onClick={handleExportJSON}
+          onClick={() => {
+            handleExportJSON();
+            playClickSound();
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-caption font-medium border border-[var(--border)] bg-[var(--panel-soft)] hover:bg-[var(--panel-hover)] text-[var(--text-secondary)] transition-colors cursor-pointer"
         >
           <FileDown className="w-3.5 h-3.5" />
@@ -147,7 +151,7 @@ export default function BlockingRulesTab() {
               <span>Block New Traffic</span>
             </div>
 
-            <form onSubmit={handleAddRule} className="space-y-3.5">
+            <form onSubmit={(e) => { handleAddRule(e); playClickSound(); }} className="space-y-3.5">
               <div className="flex flex-col gap-1.5">
                 <label className="text-caption text-[var(--text-secondary)] font-medium">Filter Category</label>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -155,12 +159,16 @@ export default function BlockingRulesTab() {
                     <button
                       key={t}
                       type="button"
-                      onClick={() => setRuleType(t)}
-                      className={`py-1.5 rounded-md text-caption font-semibold border transition-all cursor-pointer ${
+                      onClick={() => {
+                        setRuleType(t);
+                        playClickSound();
+                      }}
+                      className={cn(
+                        "py-1.5 px-3 rounded-full text-caption font-semibold transition-all cursor-pointer border",
                         ruleType === t
-                          ? 'border-[var(--accent-red)] bg-[var(--accent-red-soft)] text-[var(--accent-red)]'
-                          : 'border-[var(--border)] bg-[var(--panel-soft)] text-[var(--text-secondary)] hover:text-[var(--text)]'
-                      }`}
+                          ? "border-[var(--accent-red)] bg-[var(--accent-red-soft)] text-[var(--accent-red)]"
+                          : "border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:text-[var(--text)]"
+                      )}
                     >
                       {t === 'ip' ? 'IP Address' : t === 'app' ? 'Application' : 'Domain'}
                     </button>
@@ -199,9 +207,9 @@ export default function BlockingRulesTab() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-md text-body-sm font-semibold transition-colors cursor-pointer text-white bg-[var(--accent-red)] hover:bg-red-700 disabled:opacity-50"
+                className="w-full btn-primary bg-[var(--accent-red)]! text-white! hover:bg-red-600!"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>{isLoading ? 'Applying Filter...' : 'Apply Block Filter'}</span>
               </button>
             </form>
@@ -299,7 +307,10 @@ export default function BlockingRulesTab() {
                         <td className="font-mono text-body-sm font-semibold text-[var(--text)]">{rule.value}</td>
                         <td className="text-right">
                           <button
-                            onClick={() => handleDeleteRule(rule.type, rule.value)}
+                            onClick={() => {
+                              handleDeleteRule(rule.type, rule.value);
+                              playClickSound();
+                            }}
                             disabled={isLoading}
                             className="p-1 rounded hover:bg-[var(--panel-soft)] text-[var(--text-muted)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
                             title="Remove Block rule"

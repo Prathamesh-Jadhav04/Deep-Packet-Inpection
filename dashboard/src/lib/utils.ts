@@ -50,3 +50,40 @@ export function parseIpPort(ipPort: string): { ip: string; port: number } {
 export function generateFlowId(src: string, dst: string, protocol: string): string {
   return `${src}-${dst}-${protocol}`;
 }
+
+let audioCtx: any = null;
+
+export function playClickSound(volume = 0.08) {
+  try {
+    if (typeof window === 'undefined') return;
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    
+    if (!audioCtx) {
+      audioCtx = new AudioContextClass();
+    }
+    
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    // Snappy mechanical click synthesis
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1500, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.04);
+    
+    gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.04);
+    
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.04);
+  } catch (e) {
+    // Fail silently
+  }
+}

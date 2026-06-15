@@ -173,9 +173,9 @@ export default function FlowInspectorTab() {
         sortable: true,
         render: (f) => (
           <span
-            className="px-1.5 py-0.5 rounded text-[11px] font-semibold text-white"
+            className="px-1.5 py-0.5 rounded text-[11px] font-semibold"
             style={{
-              backgroundColor: f.app === 'Unknown' ? 'rgba(255,255,255,0.06)' : 'var(--accent-violet)',
+              backgroundColor: f.app === 'Unknown' ? 'var(--border)' : 'var(--accent-violet)',
               color: f.app === 'Unknown' ? 'var(--text-muted)' : '#fff',
             }}
           >

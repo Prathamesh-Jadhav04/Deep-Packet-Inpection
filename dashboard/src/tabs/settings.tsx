@@ -5,6 +5,7 @@ import { useDPIStore } from '@/store/dpi-store';
 import { useDPIStats } from '@/hooks/useDPIStats';
 import { StatusBadge } from '@/components/dpi/status-badge';
 import { Shield, RefreshCw, Server, AlertCircle, CheckCircle2, Moon, Sun, Monitor } from 'lucide-react';
+import { cn, playClickSound } from '@/lib/utils';
 
 export default function SettingsTab() {
   const {
@@ -96,9 +97,11 @@ export default function SettingsTab() {
                     placeholder="http://127.0.0.1:8765"
                   />
                   <button
-                    onClick={handleSaveApi}
-                    className="px-4 py-1.5 rounded-md text-body-sm font-medium transition-colors cursor-pointer bg-[var(--accent-blue)] hover:bg-[var(--accent-blue-deep)] text-[var(--text-inverse)]"
-                    style={{ background: 'var(--accent-blue)', color: '#fff' }}
+                    onClick={() => {
+                      handleSaveApi();
+                      playClickSound();
+                    }}
+                    className="btn-primary"
                   >
                     Apply
                   </button>
@@ -151,7 +154,10 @@ export default function SettingsTab() {
                   <input
                     type="checkbox"
                     checked={notifyOnHighDropRate}
-                    onChange={(e) => setNotifyOnHighDropRate(e.target.checked)}
+                    onChange={(e) => {
+                      setNotifyOnHighDropRate(e.target.checked);
+                      playClickSound();
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-9 h-5 bg-[var(--panel-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--accent-blue)] border border-[var(--border)]"></div>
@@ -190,7 +196,10 @@ export default function SettingsTab() {
                   <input
                     type="checkbox"
                     checked={notifyOnBlocked}
-                    onChange={(e) => setNotifyOnBlocked(e.target.checked)}
+                    onChange={(e) => {
+                      setNotifyOnBlocked(e.target.checked);
+                      playClickSound();
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-9 h-5 bg-[var(--panel-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--accent-blue)] border border-[var(--border)]"></div>
@@ -216,12 +225,16 @@ export default function SettingsTab() {
                 return (
                   <button
                     key={m.name}
-                    onClick={() => setTheme(m.name as any)}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border text-caption font-medium transition-all cursor-pointer ${
+                    onClick={() => {
+                      setTheme(m.name as any);
+                      playClickSound();
+                    }}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-xl border text-caption font-medium transition-all cursor-pointer",
                       active
-                        ? 'border-[var(--accent-blue)] bg-[var(--accent-blue-soft)] text-[var(--accent-blue)]'
-                        : 'border-[var(--border)] bg-[var(--panel-soft)] text-[var(--text-secondary)] hover:text-[var(--text)]'
-                    }`}
+                        ? "border-[var(--border-strong)] bg-[var(--panel-soft)] text-[var(--text)] shadow-[var(--shadow-3)]"
+                        : "border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:text-[var(--text)]"
+                    )}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{m.label}</span>
@@ -265,7 +278,10 @@ export default function SettingsTab() {
             <div className="flex items-center justify-between">
               <div className="text-body-sm font-semibold text-[var(--text)]">REST API Health</div>
               <button
-                onClick={checkHealth}
+                onClick={() => {
+                  checkHealth();
+                  playClickSound();
+                }}
                 className="p-1 rounded-md hover:bg-[var(--panel-soft)] transition-colors text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer"
                 title="Refresh Health"
               >

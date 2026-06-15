@@ -41,8 +41,8 @@ export function KPICard({ title, value, formattedValue, icon, accentColor = 'var
           )}
         </div>
         <div
-          className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
-          style={{ background: `${accentColor}15`, color: accentColor }}
+          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-1)] transition-colors duration-300 group-hover:border-neutral-700"
+          style={{ color: accentColor }}
         >
           {icon}
         </div>

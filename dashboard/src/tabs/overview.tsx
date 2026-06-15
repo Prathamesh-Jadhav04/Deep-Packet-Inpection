@@ -199,6 +199,54 @@ export default function OverviewTab() {
           subtitle="Dropped packet ratio"
         />
       </div>
+ 
+      {/* System Status Hero Spotlight Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+        <div className="md:col-span-2 dpi-spotlight dpi-spotlight-violet flex flex-col justify-between min-h-[170px] group">
+          <div className="space-y-2 relative z-10">
+            <span className="text-[11px] font-semibold text-sky-300! uppercase tracking-wider font-mono">
+              Deep Packet Classification & Enforcer Panel
+            </span>
+            <h2 className="text-[24px] md:text-[28px] text-white! font-semibold tracking-[-0.8px] leading-tight">
+              Network Traffic Intelligence Platform
+            </h2>
+            <p className="text-[14px] text-neutral-200! max-w-xl leading-relaxed mt-1">
+              This dashboard provides real-time telemetry from active Load Balancer and Fast Path worker threads, processing network flows and enforcing active drops.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-2.5 mt-4 relative z-10">
+            <span className="dpi-badge bg-green-500/20! border-green-500/30! text-green-300! py-1 px-3">
+              <span className="status-dot status-dot-active w-1.5 h-1.5 mr-1.5" />
+              Model: Random Forest ETI
+            </span>
+            <span className="dpi-badge bg-sky-500/20! border-sky-500/30! text-sky-300! py-1 px-3 font-semibold">
+              Npcap/Scapy Active
+            </span>
+          </div>
+        </div>
+
+        <div className="md:col-span-1 dpi-spotlight dpi-spotlight-magenta flex flex-col justify-between min-h-[170px] group">
+          <div className="space-y-1 relative z-10">
+            <span className="text-[11px] font-semibold text-pink-300! uppercase tracking-wider font-mono">
+              Security Shield Status
+            </span>
+            <h3 className="text-[18px] text-white! font-bold tracking-[-0.4px] mt-1">
+              {stats.dropped > 0 ? 'Threat Protection Enforced' : 'System Guard Online'}
+            </h3>
+            <p className="text-[13px] text-neutral-200! mt-1.5 leading-relaxed">
+              {stats.dropped > 0 
+                ? `Actively blocked ${stats.dropped.toLocaleString()} anomalous or blacklisted packets.`
+                : 'No network threats or blocked packet matches detected in this session.'}
+            </p>
+          </div>
+
+          <div className="mt-4 relative z-10 flex items-center justify-between text-[11px] text-neutral-300! font-mono border-t border-white/10 pt-2.5">
+            <span className="text-neutral-300!">Verdict Stream</span>
+            <span className="text-white! font-medium">{stats.forwarded.toLocaleString()} fwd / {stats.dropped.toLocaleString()} drp</span>
+          </div>
+        </div>
+      </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

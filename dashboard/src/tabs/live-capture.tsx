@@ -6,8 +6,9 @@ import { useDPIInterfaces } from '@/hooks/useDPIInterfaces';
 import { useDPIStats } from '@/hooks/useDPIStats';
 import { DataTable, type ColumnDef } from '@/components/dpi/data-table';
 import { StatusBadge } from '@/components/dpi/status-badge';
+import { GradientSpotlightCard } from '@/components/dpi/gradient-spotlight-card';
 import { Radio, Play, Square, Settings2, ShieldAlert, ArrowDownWideNarrow, Search, FileDown } from 'lucide-react';
-import { formatBytes, formatDuration } from '@/lib/utils';
+import { cn, formatBytes, formatDuration } from '@/lib/utils';
 import type { PacketEntry } from '@/types/dpi';
 
 export default function LiveCaptureTab() {
@@ -132,10 +133,10 @@ export default function LiveCaptureTab() {
         sortable: true,
         render: (p) => (
           <span
-            className="px-1.5 py-0.5 rounded text-[11px] font-semibold text-white"
+            className="px-1.5 py-0.5 rounded text-[11px] font-semibold"
             style={{
               backgroundColor:
-                p.app === 'Unknown' ? 'rgba(255,255,255,0.08)' : 'var(--accent-blue)',
+                p.app === 'Unknown' ? 'var(--border)' : 'var(--accent-blue)',
               color: p.app === 'Unknown' ? 'var(--text-muted)' : '#fff',
             }}
           >
@@ -172,18 +173,25 @@ export default function LiveCaptureTab() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--border)] pb-4 gap-4">
-        <div>
-          <h2 className="text-display-sm flex items-center gap-2">
-            <Radio className="w-5 h-5 text-[var(--accent-blue)] animate-pulse" />
-            <span>Live Packet Capture Controls</span>
-          </h2>
-          <p className="text-caption text-[var(--text-muted)] mt-1">
-            Intercept network frames from local interfaces and classify traffic flows in real-time.
-          </p>
+      {/* Atmosphere tile (pure UI decoration) */}
+      <div className="relative overflow-hidden">
+        <div className="absolute -top-10 -right-16 w-[420px] h-[220px] opacity-70 blur-[22px]">
+          <GradientSpotlightCard variant="violet" />
         </div>
-        <div className="flex items-center gap-3">
-          <StatusBadge status={isCapturing ? 'running' : 'idle'} label={isCapturing ? 'Capturing' : 'Idle'} />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--border)] pb-4 gap-4">
+          <div>
+            <h2 className="text-display-sm flex items-center gap-2">
+              <Radio className="w-5 h-5 text-[var(--accent-blue)] animate-pulse" />
+              <span>Live Packet Capture Controls</span>
+            </h2>
+            <p className="text-caption text-[var(--text-muted)] mt-1">
+              Intercept network frames from local interfaces and classify traffic flows in real-time.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <StatusBadge status={isCapturing ? 'running' : 'idle'} label={isCapturing ? 'Capturing' : 'Idle'} />
+          </div>
         </div>
       </div>
 
@@ -221,35 +229,36 @@ export default function LiveCaptureTab() {
               </div>
 
               {/* Start Stop Button Row */}
-              <div className="flex items-end gap-2 pt-4 sm:pt-0">
+              <div className="flex items-end gap-2.5 pt-4 sm:pt-0">
                 {!isCapturing ? (
                   <button
                     onClick={handleStartCapture}
                     disabled={isCaptureActionLoading || !isConnected}
-                    className="flex items-center gap-2 px-5 py-2 rounded-md text-body-sm font-semibold transition-colors cursor-pointer text-white bg-[var(--accent-blue)] hover:bg-[var(--accent-blue-deep)] disabled:opacity-50"
+                    className="btn-primary flex-shrink-0"
                   >
-                    <Play className="w-4 h-4 fill-current" />
+                    <Play className="w-3.5 h-3.5 fill-current" />
                     <span>Start Capture</span>
                   </button>
                 ) : (
                   <button
                     onClick={handleStopCapture}
                     disabled={isCaptureActionLoading}
-                    className="flex items-center gap-2 px-5 py-2 rounded-md text-body-sm font-semibold transition-colors cursor-pointer text-white bg-[var(--accent-red)] hover:bg-red-700"
+                    className="btn-primary bg-[var(--accent-red)]! text-white! hover:bg-red-600! flex-shrink-0"
                   >
-                    <Square className="w-4 h-4 fill-current" />
+                    <Square className="w-3.5 h-3.5 fill-current" />
                     <span>Stop Capture</span>
                   </button>
                 )}
 
                 <button
                   onClick={() => setShowConfig(!showConfig)}
-                  className={`p-2 rounded-md border border-[var(--border)] hover:bg-[var(--panel-soft)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text)] cursor-pointer ${
-                    showConfig ? 'bg-[var(--panel-soft)] border-[var(--border-strong)]' : ''
-                  }`}
+                  className={cn(
+                    "btn-secondary rounded-full w-10 h-10 p-0 flex items-center justify-center flex-shrink-0",
+                    showConfig && "border-[var(--accent-blue)]! text-[var(--accent-blue)]!"
+                  )}
                   title="Configure Capture Options"
                 >
-                  <Settings2 className="w-5 h-5" />
+                  <Settings2 className="w-4 h-4" />
                 </button>
               </div>
             </div>

@@ -6,6 +6,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 export function CustomCursor() {
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   // Exact coordinates of the mouse
@@ -13,7 +14,7 @@ export function CustomCursor() {
   const cursorY = useMotionValue(-100);
 
   // Spring physics for trailing effect
-  const springConfig = { damping: 35, stiffness: 350, mass: 0.35 };
+  const springConfig = { damping: 40, stiffness: 400, mass: 0.35 };
   const ringX = useSpring(cursorX, springConfig);
   const ringY = useSpring(cursorY, springConfig);
 
@@ -40,10 +41,14 @@ export function CustomCursor() {
 
     const handleMouseLeave = () => setVisible(false);
     const handleMouseEnter = () => setVisible(true);
+    const handleMouseDown = () => setIsClicked(true);
+    const handleMouseUp = () => setIsClicked(false);
 
     window.addEventListener('mousemove', moveCursor);
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
 
     // Detect if hover target is clickable to scale cursor
     const handleMouseOver = (e: MouseEvent) => {
@@ -71,6 +76,8 @@ export function CustomCursor() {
       window.removeEventListener('mousemove', moveCursor);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('mouseover', handleMouseOver);
       document.body.classList.remove('custom-cursor-active');
     };
@@ -82,31 +89,36 @@ export function CustomCursor() {
     <>
       {/* Inner Dot following cursor precisely */}
       <motion.div
-        className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full pointer-events-none z-[9999] mix-blend-difference bg-white"
+        className="fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[9999] custom-cursor-dot"
         style={{
           x: cursorX,
           y: cursorY,
           translateX: '-50%',
           translateY: '-50%',
+          backgroundColor: 'var(--cursor-dot)',
         }}
+        animate={{
+          scale: isClicked ? 0.75 : 1,
+        }}
+        transition={{ type: 'spring', stiffness: 500, damping: 15 }}
       />
       {/* Outer Ring lagging slightly with spring motion */}
       <motion.div
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9998] border border-[var(--border-strong)]"
+        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9998] border custom-cursor-ring"
         style={{
           x: ringX,
           y: ringY,
           translateX: '-50%',
           translateY: '-50%',
-          width: hovered ? 38 : 20,
-          height: hovered ? 38 : 20,
+          width: hovered ? 44 : 22,
+          height: hovered ? 44 : 22,
           backgroundColor: hovered ? 'var(--accent-blue-soft)' : 'transparent',
-          borderColor: hovered ? 'var(--accent-blue)' : 'var(--border-strong)',
+          borderColor: hovered ? 'var(--accent-blue)' : 'var(--cursor-ring)',
         }}
         animate={{
-          scale: hovered ? 1.15 : 1,
+          scale: isClicked ? 0.75 : (hovered ? 1.15 : 1),
         }}
-        transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
       />
     </>
   );
