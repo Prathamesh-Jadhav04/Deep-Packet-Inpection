@@ -37,6 +37,10 @@ interface DPIStore {
   setNotifyOnBlocked: (notify: boolean) => void;
   dropRateThreshold: number;
   setDropRateThreshold: (threshold: number) => void;
+
+  // Sound
+  isMuted: boolean;
+  setMuted: (muted: boolean) => void;
 }
 
 export const useDPIStore = create<DPIStore>()(
@@ -69,6 +73,9 @@ export const useDPIStore = create<DPIStore>()(
       setNotifyOnBlocked: (notify) => set({ notifyOnBlocked: notify }),
       dropRateThreshold: 10,
       setDropRateThreshold: (threshold) => set({ dropRateThreshold: threshold }),
+
+      isMuted: false,
+      setMuted: (muted) => set({ isMuted: muted }),
     }),
     {
       name: 'dpi-dashboard-settings',
@@ -79,6 +86,7 @@ export const useDPIStore = create<DPIStore>()(
         notifyOnHighDropRate: state.notifyOnHighDropRate,
         notifyOnBlocked: state.notifyOnBlocked,
         dropRateThreshold: state.dropRateThreshold,
+        isMuted: state.isMuted,
       }),
     }
   )

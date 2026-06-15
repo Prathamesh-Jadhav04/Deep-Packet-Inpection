@@ -12,6 +12,7 @@ import BlockingRulesTab from '@/tabs/blocking-rules';
 import TrafficAnalyticsTab from '@/tabs/traffic-analytics';
 import FlowInspectorTab from '@/tabs/flow-inspector';
 import SettingsTab from '@/tabs/settings';
+import AboutTab from '@/tabs/about';
 
 const TAB_COMPONENTS = [
   OverviewTab,
@@ -20,6 +21,7 @@ const TAB_COMPONENTS = [
   TrafficAnalyticsTab,
   FlowInspectorTab,
   SettingsTab,
+  AboutTab,
 ];
 
 export default function Home() {

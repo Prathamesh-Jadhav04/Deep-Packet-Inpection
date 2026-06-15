@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useDPIStore } from '@/store/dpi-store';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -56,6 +57,10 @@ let audioCtx: any = null;
 export function playClickSound(volume = 0.08) {
   try {
     if (typeof window === 'undefined') return;
+    
+    // Check global mute state
+    if (useDPIStore.getState().isMuted) return;
+
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
     

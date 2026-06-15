@@ -281,30 +281,32 @@ export default function TrafficAnalyticsTab() {
                   No domain records captured.
                 </div>
               ) : (
-                <table className="dpi-table">
-                  <thead>
-                    <tr>
-                      <th>SNI / Host Context</th>
-                      <th>Classified Signature</th>
-                      <th className="text-right">Hits</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.domains.map((dom, idx) => (
-                      <tr key={idx}>
-                        <td className="font-mono text-body-sm text-[var(--text)]">{dom.domain}</td>
-                        <td>
-                          <span className="dpi-badge dpi-badge-info py-0 px-2 font-semibold">
-                            {dom.app}
-                          </span>
-                        </td>
-                        <td className="text-right font-mono text-body-sm text-[var(--text-secondary)]">
-                          {dom.count.toLocaleString()}
-                        </td>
+                <div className="w-full overflow-x-auto scrollbar-none">
+                  <table className="dpi-table">
+                    <thead>
+                      <tr>
+                        <th>SNI / Host Context</th>
+                        <th>Classified Signature</th>
+                        <th className="text-right">Hits</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {data.domains.map((dom, idx) => (
+                        <tr key={idx}>
+                          <td className="font-mono text-body-sm text-[var(--text)]">{dom.domain}</td>
+                          <td>
+                            <span className="dpi-badge dpi-badge-info py-0 px-2 font-semibold">
+                              {dom.app}
+                            </span>
+                          </td>
+                          <td className="text-right font-mono text-body-sm text-[var(--text-secondary)]">
+                            {dom.count.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

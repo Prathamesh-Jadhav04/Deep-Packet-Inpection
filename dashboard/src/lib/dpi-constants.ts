@@ -60,6 +60,7 @@ export const TAB_NAMES = [
   'Traffic Analytics',
   'Flow Inspector',
   'Settings',
+  'About',
 ] as const;
 
 export const TAB_ICONS = [
@@ -69,4 +70,5 @@ export const TAB_ICONS = [
   'BarChart3',
   'Search',
   'Settings',
+  'Info',
 ] as const;

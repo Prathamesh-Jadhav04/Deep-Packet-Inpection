@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -9,6 +9,9 @@ import {
   BarChart3,
   Search,
   Settings,
+  Info,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { useDPIStore } from '@/store/dpi-store';
 import { useDPIStats } from '@/hooks/useDPIStats';
@@ -16,16 +19,26 @@ import { StatusBadge } from '@/components/dpi/status-badge';
 import { cn, playClickSound } from '@/lib/utils';
 import { TAB_NAMES } from '@/lib/dpi-constants';
 
-const TAB_ICONS = [LayoutDashboard, Radio, Shield, BarChart3, Search, Settings];
+const TAB_ICONS = [LayoutDashboard, Radio, Shield, BarChart3, Search, Settings, Info];
 
 interface NavBarProps {
   className?: string;
 }
 
 export function NavBar({ className }: NavBarProps) {
-  const { activeTab, setActiveTab, isConnected } = useDPIStore();
+  const { activeTab, setActiveTab, isConnected, isMuted, setMuted } = useDPIStore();
   const { stats } = useDPIStats();
   const navRef = useRef<HTMLElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll listener
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const engineStatus = useMemo(() => {
     if (!isConnected) return 'disconnected' as const;
@@ -51,25 +64,32 @@ export function NavBar({ className }: NavBarProps) {
 
   return (
     <header
-      className={cn('sticky top-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg)]/90 backdrop-blur-md', className)}
-      style={{
-        height: 'var(--nav-height)',
-      }}
+      className={cn(
+        'sticky top-0 z-50 w-full transition-all duration-300 flex items-center justify-center px-4',
+        scrolled 
+          ? 'h-[64px] bg-transparent' 
+          : 'h-[56px] border-b border-[var(--border-subtle)] bg-[var(--bg)]/90 backdrop-blur-md',
+        className
+      )}
     >
-      <div className="h-full max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-between gap-4">
+      <div 
+        className={cn(
+          "w-full mx-auto px-4 md:px-6 flex items-center justify-between gap-4 transition-all duration-300",
+          scrolled 
+            ? "max-w-[1300px] rounded-full border border-[var(--border-strong)] bg-[var(--bg-soft)]/90 backdrop-blur-md shadow-md h-[46px]" 
+            : "max-w-[1400px] h-full"
+        )}
+      >
         {/* Logo */}
-        <div className="flex items-center gap-3.5 flex-shrink-0">
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center border border-[var(--border)] bg-[var(--panel-soft)] shadow-[var(--shadow-1)]"
-          >
-            <Shield className="w-4.5 h-4.5 text-[var(--accent-blue)]" />
-          </div>
-          <div className="hidden sm:block">
-            <h1
-              className="text-[20px] font-bold text-[var(--text)] tracking-[-0.8px] font-sans"
-            >
-              DPI Engine<span className="text-[var(--accent-blue)]">.</span>
-            </h1>
+        <div className="flex items-center gap-2.5 flex-shrink-0 select-none">
+          <Shield className="w-4.5 h-4.5 text-[var(--accent-blue)]" />
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-[13px] font-light tracking-[2.5px] text-[var(--text)] uppercase font-sans">
+              Deep Packet
+            </span>
+            <span className="text-[13px] font-bold tracking-[3px] text-[var(--accent-blue)] uppercase font-sans">
+              Inspection
+            </span>
           </div>
         </div>
 
@@ -89,12 +109,13 @@ export function NavBar({ className }: NavBarProps) {
                 role="tab"
                 aria-selected={isActive}
                 aria-controls={`tabpanel-${index}`}
+                title={name}
                 onClick={() => {
                   setActiveTab(index);
                   playClickSound();
                 }}
                 className={cn(
-                  'relative flex items-center gap-2 px-4 py-2 rounded-full text-[15px] whitespace-nowrap transition-all cursor-pointer',
+                  'relative flex items-center gap-2 px-2.5 md:px-4 py-2 rounded-full text-[15px] whitespace-nowrap transition-all cursor-pointer',
                   'hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2',
                   isActive
                     ? 'font-semibold'
@@ -126,6 +147,20 @@ export function NavBar({ className }: NavBarProps) {
 
         {/* Status + Actions */}
         <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => {
+              const nextMuted = !isMuted;
+              setMuted(nextMuted);
+              if (!nextMuted) {
+                // Give visual-audio feedback when unmuting
+                setTimeout(() => playClickSound(0.08), 10);
+              }
+            }}
+            className="p-2 rounded-full border border-[var(--border)] bg-[var(--panel-soft)] hover:bg-[var(--panel-hover)] text-[var(--text-secondary)] hover:text-[var(--text)] transition-all cursor-pointer flex items-center justify-center shadow-[var(--shadow-1)] hover:shadow-[var(--shadow-2)]"
+            title={isMuted ? "Unmute UI sounds" : "Mute UI sounds"}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
           <StatusBadge status={engineStatus} />
         </div>
       </div>

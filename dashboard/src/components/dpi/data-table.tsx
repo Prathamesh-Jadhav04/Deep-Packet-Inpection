@@ -73,83 +73,87 @@ export function DataTable<T>({
 
   return (
     <div className="flex flex-col w-full border border-[var(--border)] rounded-lg overflow-hidden bg-[var(--panel)]">
-      {/* Header section (Sticky/Fixed) */}
-      <div className="w-full bg-[var(--panel-soft)] border-b border-[var(--border)] select-none">
-        <div className="flex items-center text-caption-mono text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[11px] py-2 px-3">
-          {columns.map((col) => (
-            <div
-              key={String(col.key)}
-              onClick={() => col.sortable && handleSort(String(col.key))}
-              className={cn(
-                'flex-1 flex items-center gap-1 min-w-0 py-1 first:pl-2',
-                col.sortable && 'cursor-pointer hover:text-[var(--text)] transition-colors',
-                col.className
-              )}
-            >
-              <span className="truncate">{col.header}</span>
-              {col.sortable && (
-                <ArrowUpDown className={cn(
-                  'w-3 h-3 flex-shrink-0',
-                  sortKey === col.key ? 'text-[var(--accent-blue)]' : 'text-gray-600'
-                )} />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Scrollable container with virtualization */}
-      <div
-        ref={containerRef}
-        className="w-full overflow-y-auto scrollbar-thin"
-        style={{ height }}
-      >
-        {sortedData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-caption text-[var(--text-muted)] font-mono">
-            No records to display
-          </div>
-        ) : (
-          <div
-            className="w-full relative"
-            style={{ height: `${totalSize}px` }}
-          >
-            {virtualRows.map((virtualRow) => {
-              const item = sortedData[virtualRow.index];
-              const key = rowKey(item);
-              const action = actionField ? actionField(item) : 'FORWARD';
-
-              return (
+      <div className="w-full overflow-x-auto scrollbar-none">
+        <div className="min-w-[800px] md:min-w-full flex flex-col w-full">
+          {/* Header section (Sticky/Fixed) */}
+          <div className="w-full bg-[var(--panel-soft)] border-b border-[var(--border)] select-none">
+            <div className="flex items-center text-caption-mono text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[11px] py-2 px-3">
+              {columns.map((col) => (
                 <div
-                  key={key}
-                  onClick={() => onRowClick?.(item)}
+                  key={String(col.key)}
+                  onClick={() => col.sortable && handleSort(String(col.key))}
                   className={cn(
-                    'absolute top-0 left-0 w-full flex items-center py-2 px-3 border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--panel-hover)]',
-                    onRowClick && 'cursor-pointer',
-                    action === 'DROP'
-                      ? 'bg-[var(--accent-red-soft)]/5 text-[var(--accent-red)] hover:bg-[var(--accent-red-soft)]/10'
-                      : 'text-[var(--text-secondary)]'
+                    'flex-1 flex items-center gap-1 min-w-0 py-1 first:pl-2',
+                    col.sortable && 'cursor-pointer hover:text-[var(--text)] transition-colors',
+                    col.className
                   )}
-                  style={{
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
                 >
-                  {columns.map((col) => (
-                    <div
-                      key={String(col.key)}
-                      className={cn(
-                        'flex-1 min-w-0 truncate text-body-sm first:pl-2',
-                        col.className
-                      )}
-                    >
-                      {col.render ? col.render(item) : String((item as any)[col.key] ?? '')}
-                    </div>
-                  ))}
+                  <span className="truncate">{col.header}</span>
+                  {col.sortable && (
+                    <ArrowUpDown className={cn(
+                      'w-3 h-3 flex-shrink-0',
+                      sortKey === col.key ? 'text-[var(--accent-blue)]' : 'text-gray-600'
+                    )} />
+                  )}
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        )}
+
+          {/* Scrollable container with virtualization */}
+          <div
+            ref={containerRef}
+            className="w-full overflow-y-auto scrollbar-thin"
+            style={{ height }}
+          >
+            {sortedData.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-caption text-[var(--text-muted)] font-mono">
+                No records to display
+              </div>
+            ) : (
+              <div
+                className="w-full relative"
+                style={{ height: `${totalSize}px` }}
+              >
+                {virtualRows.map((virtualRow) => {
+                  const item = sortedData[virtualRow.index];
+                  const key = rowKey(item);
+                  const action = actionField ? actionField(item) : 'FORWARD';
+
+                  return (
+                    <div
+                      key={key}
+                      onClick={() => onRowClick?.(item)}
+                      className={cn(
+                        'absolute top-0 left-0 w-full flex items-center py-2 px-3 border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--panel-hover)]',
+                        onRowClick && 'cursor-pointer',
+                        action === 'DROP'
+                          ? 'bg-[var(--accent-red-soft)]/5 text-[var(--accent-red)] hover:bg-[var(--accent-red-soft)]/10'
+                          : 'text-[var(--text-secondary)]'
+                      )}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      {columns.map((col) => (
+                        <div
+                          key={String(col.key)}
+                          className={cn(
+                            'flex-1 min-w-0 truncate text-body-sm first:pl-2',
+                            col.className
+                          )}
+                        >
+                          {col.render ? col.render(item) : String((item as any)[col.key] ?? '')}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

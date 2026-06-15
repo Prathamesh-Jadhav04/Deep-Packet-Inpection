@@ -352,7 +352,6 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 1px rgba(0, 153, 255, 0.15) !important;
 }
 
-/* Spotlight tile (gradient atmosphere card) */
 .dpi-spotlight {
   border-radius: var(--radius-xxl);
   padding: var(--space-xl);
@@ -361,6 +360,10 @@ input:focus, select:focus, textarea:focus {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08); /* Fused light/dark borders */
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+[data-theme="light"] .dpi-spotlight {
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.06), var(--shadow-2) !important;
 }
 .dpi-spotlight:hover {
   transform: translateY(-2px);
