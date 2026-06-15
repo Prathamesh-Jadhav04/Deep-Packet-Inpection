@@ -81,7 +81,13 @@ export function NavBar({ className }: NavBarProps) {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2.5 flex-shrink-0 select-none">
+        <div 
+          onClick={() => {
+            setActiveTab(0);
+            playClickSound();
+          }}
+          className="flex items-center gap-2.5 flex-shrink-0 select-none cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <Shield className="w-4.5 h-4.5 text-[var(--accent-blue)]" />
           <div className="hidden sm:flex items-center gap-2">
             <span className="text-[13px] font-light tracking-[2.5px] text-[var(--text)] uppercase font-sans">

@@ -84,10 +84,87 @@ export function playClickSound(volume = 0.08) {
     osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.04);
     
     gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
     
     osc.start(audioCtx.currentTime);
     osc.stop(audioCtx.currentTime + 0.04);
+  } catch (e) {
+    // Fail silently
+  }
+}
+
+export function playBurstSound() {
+  try {
+    if (typeof window === 'undefined') return;
+    if (useDPIStore.getState().isMuted) return;
+
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    
+    if (!audioCtx) {
+      audioCtx = new AudioContextClass();
+    }
+    
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    const now = audioCtx.currentTime;
+    
+    // 1. Sub Bass Sweep (sine) - provides physical feel
+    const subOsc = audioCtx.createOscillator();
+    const subGain = audioCtx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(250, now);
+    subOsc.frequency.exponentialRampToValueAtTime(35, now + 0.4);
+    subGain.gain.setValueAtTime(0.35, now);
+    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+    subOsc.connect(subGain);
+    subGain.connect(audioCtx.destination);
+    subOsc.start(now);
+    subOsc.stop(now + 0.5);
+
+    // 2. Mid Impact (triangle) - provides crunchy core
+    const midOsc = audioCtx.createOscillator();
+    const midGain = audioCtx.createGain();
+    midOsc.type = 'triangle';
+    midOsc.frequency.setValueAtTime(600, now);
+    midOsc.frequency.exponentialRampToValueAtTime(70, now + 0.3);
+    midGain.gain.setValueAtTime(0.2, now);
+    midGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    midOsc.connect(midGain);
+    midGain.connect(audioCtx.destination);
+    midOsc.start(now);
+    midOsc.stop(now + 0.35);
+
+    // 3. White Noise Debris/Burst - provides structural blast crackle
+    const bufferSize = audioCtx.sampleRate * 1.2; // 1.2s duration
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    
+    const noiseNode = audioCtx.createBufferSource();
+    noiseNode.buffer = buffer;
+    
+    // Filter to sweep noise down (sounds like collapsing pressure)
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1200, now);
+    filter.frequency.exponentialRampToValueAtTime(130, now + 0.85);
+    filter.Q.setValueAtTime(1.8, now);
+    
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.25, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.00001, now + 1.2);
+    
+    noiseNode.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    noiseNode.start(now);
+    noiseNode.stop(now + 1.2);
   } catch (e) {
     // Fail silently
   }

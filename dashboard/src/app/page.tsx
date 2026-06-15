@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDPIStore } from '@/store/dpi-store';
 import { NavBar } from '@/components/dpi/nav-bar';
 import { motion, AnimatePresence } from 'framer-motion';
+import { IntroOverlay } from '@/components/dpi/intro-overlay';
 
 // Dynamic / lazy import could also be used, but direct imports are reliable and compact
 import OverviewTab from '@/tabs/overview';
@@ -27,6 +28,11 @@ const TAB_COMPONENTS = [
 export default function Home() {
   const { activeTab, apiBase, setApiBase } = useDPIStore();
   const ActiveTabComponent = TAB_COMPONENTS[activeTab] || OverviewTab;
+  const [showIntro, setShowIntro] = useState(true);
+
+  const handleIntroEnter = () => {
+    setShowIntro(false);
+  };
 
   // Automatically sync API base with the current origin to prevent port mismatches
   useEffect(() => {
@@ -70,6 +76,9 @@ export default function Home() {
       <footer className="border-t border-[var(--border-subtle)] py-4 text-center text-[10px] text-[var(--text-muted)] font-mono">
         DPI Engine Console v2.0 • Advanced Packet Classification & Enforcer Panel
       </footer>
+
+      {/* Onboarding Overview Modal Overlay */}
+      {showIntro && <IntroOverlay onEnter={handleIntroEnter} />}
     </div>
   );
 }
