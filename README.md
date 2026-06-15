@@ -1,3 +1,11 @@
+---
+title: Deep Packet Inspection
+emoji: 🛡️
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+---
 # DPI Engine - Deep Packet Inspection System
 
 
