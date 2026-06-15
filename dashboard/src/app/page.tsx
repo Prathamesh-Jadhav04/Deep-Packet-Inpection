@@ -38,7 +38,8 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const currentOrigin = window.location.origin;
-      if (window.location.port === '8765' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
+      // Only auto-sync if running directly on the Python backend port (All-in-one deployment)
+      if (window.location.port === '8765') {
         if (apiBase !== currentOrigin) {
           setApiBase(currentOrigin);
         }
