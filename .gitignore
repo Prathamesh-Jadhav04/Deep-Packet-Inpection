@@ -1,0 +1,21 @@
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# DPI packet outputs (Temporary logs)
+live_output.pcap
+output.pcap
+output_anomalies.pcap
+
+# Next.js Build & Node files
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+dashboard/.env*.local
+
+# System/IDE files
+.DS_Store
+.vscode/
+.idea/
