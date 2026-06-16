@@ -7,7 +7,7 @@ import { useDPIStats } from '@/hooks/useDPIStats';
 import { DataTable, type ColumnDef } from '@/components/dpi/data-table';
 import { StatusBadge } from '@/components/dpi/status-badge';
 import { GradientSpotlightCard } from '@/components/dpi/gradient-spotlight-card';
-import { Radio, Play, Square, Settings2, ShieldAlert, ArrowDownWideNarrow, Search, FileDown } from 'lucide-react';
+import { Radio, Play, Square, Settings2, ShieldAlert, ArrowDownWideNarrow, Search, FileDown, Info } from 'lucide-react';
 import { cn, formatBytes, formatDuration } from '@/lib/utils';
 import type { PacketEntry } from '@/types/dpi';
 
@@ -23,6 +23,7 @@ export default function LiveCaptureTab() {
   const [outputFile, setOutputFile] = useState('live_output.pcap');
   const [showConfig, setShowConfig] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   // Is capture currently running on backend?
   const isCapturing = useMemo(() => stats?.capture_running ?? false, [stats?.capture_running]);
@@ -259,7 +260,18 @@ export default function LiveCaptureTab() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-[200px]">
                 <div className="flex flex-col gap-1 w-full">
-                  <label className="text-caption text-[var(--text-muted)]">Interface Selection</label>
+                  <div className="flex items-center justify-between w-full">
+                    <label className="text-caption text-[var(--text-muted)]">Interface Selection</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowInfoModal(true)}
+                      className="text-[var(--text-muted)] hover:text-[var(--accent-blue)] transition-colors p-0.5 flex items-center gap-1 cursor-pointer"
+                      title="Why Simulated Mode?"
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-medium hidden sm:inline">Info</span>
+                    </button>
+                  </div>
                   <select
                     disabled={isCapturing}
                     value={selectedIface}
@@ -312,8 +324,18 @@ export default function LiveCaptureTab() {
             </div>
 
             {selectedIface === 'simulated' && (
-              <div className="text-[11px] text-[var(--accent-blue)] bg-[var(--accent-blue-soft)]/20 px-3 py-2 rounded-lg border border-[var(--accent-blue)]/20 animate-fade-in">
-                💡 <strong>Simulated Capture active:</strong> Pre-recorded packet logs (`test_dpi.pcap`) will be continuously replayed at normal rates to populate metrics, graphs, tables, and trigger rule alerts, safely avoiding permission/socket constraints.
+              <div className="text-[11px] text-[var(--accent-blue)] bg-[var(--accent-blue-soft)]/20 px-3 py-2 rounded-lg border border-[var(--accent-blue)]/20 animate-fade-in flex items-center justify-between gap-3">
+                <span className="flex-1">
+                  💡 <strong>Simulated Capture active:</strong> Pre-recorded packet logs (`test_dpi.pcap`) will be continuously replayed at normal rates to populate metrics, graphs, tables, and trigger rule alerts, safely avoiding permission/socket constraints.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowInfoModal(true)}
+                  className="text-[var(--accent-blue)] hover:underline flex-shrink-0 font-semibold text-[10px] cursor-pointer flex items-center gap-1"
+                >
+                  <Info className="w-3 h-3" />
+                  <span>Learn More</span>
+                </button>
               </div>
             )}
 
@@ -452,6 +474,64 @@ export default function LiveCaptureTab() {
           />
         </div>
       </div>
+
+      {/* Responsive Info modal dialog */}
+      {showInfoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in">
+          <div className="relative w-full max-w-md bg-[var(--panel)] border border-[var(--border-strong)] rounded-xl p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-scale-up">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3.5 mb-4">
+              <h3 className="text-body-md font-bold flex items-center gap-2 text-[var(--text)]">
+                <Info className="w-4 h-4 text-[var(--accent-blue)] animate-pulse" />
+                <span>Simulated Mode Explained</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowInfoModal(false)}
+                className="text-[var(--text-muted)] hover:text-[var(--text)] transition-colors text-body-lg font-semibold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1 text-body-sm text-[var(--text-secondary)] leading-relaxed">
+              <div className="bg-[var(--accent-blue-soft)]/20 border border-[var(--accent-blue)]/20 p-3 rounded-lg">
+                <strong className="block text-[12px] text-[var(--accent-blue)]">🔌 Why Simulated Mode?</strong>
+                <p className="mt-1 text-[11.5px]">
+                  Cloud environments, sandboxes, and virtual containers (like Hugging Face Spaces) restrict raw socket creation privileges (<code className="bg-[var(--panel-soft)] px-1 py-0.5 rounded font-mono text-[10.5px]">CAP_NET_RAW</code> / administrator access).
+                  Without simulated mode, the DPI engine cannot bind to any physical adapter and would fail to function.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <strong className="block text-[12px] text-[var(--text)]">📝 What is this mode?</strong>
+                <p className="text-[11.5px]">
+                  This is a <strong>Demo Mode</strong>. It streams pre-recorded packet flows from <code className="bg-[var(--panel-soft)] px-1 py-0.5 rounded font-mono text-[10.5px]">test_dpi.pcap</code>, dynamically updates timestamps, and feeds them into the packet pipeline load balancers. This showcases real-time protocol parsing, AI classification, and blocking rules features without requiring any root permissions.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <strong className="block text-[12px] text-[var(--text)]">🎥 Looking for Live Mode Demonstration?</strong>
+                <p className="text-[11.5px]">
+                  To see the engine capture live network traffic, enforce blocking, and tag threats on local networks, check out the demonstration GIF in the project's main <a href="https://github.com/Prathamesh-Jadhav04/Deep-Packet-Inpection#readme" target="_blank" rel="noreferrer" className="text-[var(--accent-blue)] underline hover:text-[var(--accent-blue-hover)]">GitHub README.md</a>.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-[var(--border)] pt-4 mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowInfoModal(false)}
+                className="btn-secondary px-4 py-1.5 text-caption font-medium cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
