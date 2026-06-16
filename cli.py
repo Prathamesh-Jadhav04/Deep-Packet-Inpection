@@ -281,5 +281,25 @@ def alerts():
     except Exception as e:
         click.echo(click.style(str(e), fg="red"), err=True)
 
+@click.group(name="threat-intel")
+def threat_intel_group():
+    """Manage Threat Intelligence feeds."""
+    pass
+
+@threat_intel_group.command(name="update")
+def threat_intel_update():
+    """Trigger update/ingestion of dynamic threat feeds."""
+    try:
+        click.echo(click.style("Triggering threat intelligence feed update...", fg="cyan"))
+        res = api_request("/api/threat-intel/update", "POST", {})
+        if res.get("ok"):
+            click.echo(click.style(f"[OK] {res.get('message')}", fg="green"))
+        else:
+            click.echo(click.style(f"Error: {res.get('message')}", fg="red"), err=True)
+    except Exception as e:
+        click.echo(click.style(str(e), fg="red"), err=True)
+
+main.add_command(threat_intel_group)
+
 if __name__ == "__main__":
     main()

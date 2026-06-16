@@ -190,8 +190,11 @@ class FastPath:
         with self.flows_lock:
             flow = self.flows.get(packet.tuple)
             if flow is None:
+                flow = self.flows.get(packet.tuple.reverse())
+            if flow is None:
                 flow = FlowEntry(tuple=packet.tuple)
                 self.flows[packet.tuple] = flow
+                self.flows[packet.tuple.reverse()] = flow
 
         flow.packets += 1
         flow.bytes += len(packet.data)
@@ -368,7 +371,12 @@ class FastPath:
         reset_packets: List[Packet] = []
 
         with self.flows_lock:
-            flows = list(self.flows.values())
+            flows = []
+            seen = set()
+            for f in self.flows.values():
+                if id(f) not in seen:
+                    seen.add(id(f))
+                    flows.append(f)
             flow_by_tuple = dict(self.flows)
 
         for flow in flows:

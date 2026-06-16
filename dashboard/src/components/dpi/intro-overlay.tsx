@@ -363,11 +363,11 @@ export function IntroOverlay({ onEnter }: IntroOverlayProps) {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 select-none">
                 <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
                   <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">Throughput</span>
-                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">4,800+ pps</span>
+                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">1,575 pps</span>
                 </div>
                 <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
                   <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">ETI Inference</span>
-                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">&lt;10ms</span>
+                  <span className="text-[15px] font-mono font-bold text-[var(--text)]">5.3ms</span>
                 </div>
                 <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--panel-soft)] text-center space-y-0.5">
                   <span className="text-[9px] text-[var(--text-muted)] block uppercase tracking-wider font-mono">TLS Tracking</span>

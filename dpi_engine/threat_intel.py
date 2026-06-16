@@ -47,6 +47,9 @@ class ThreatIntelManager:
         # Load standard static threat intelligence indicators for instant zero-config lookup
         self._load_static_indicators()
 
+        # Start a background thread to fetch dynamic feeds to avoid blocking startup
+        threading.Thread(target=self.update_feeds, name="ThreatIntelFeedFetcher", daemon=True).start()
+
     def _load_static_indicators(self) -> None:
         """Populate initial mock/static threat indicators from famous public threat sources."""
         # Static indicators representing C2 servers, botnets, and phishing domains
@@ -87,6 +90,95 @@ class ThreatIntelManager:
                 self.malicious_ips.update(static_ips)
                 self.malicious_domains.update(static_domains)
         logger.info(f"[ThreatIntel] Loaded {len(static_ips)} IPs and {len(static_domains)} domains into Threat Intel.")
+
+    def update_feeds(self) -> tuple[int, int]:
+        """Fetch threat feeds from online sources and populate IP/domain lists."""
+        import urllib.request
+        import urllib.error
+        import re
+
+        ips_added = 0
+        domains_added = 0
+
+        # Pattern to match IPv4 addresses
+        ipv4_pattern = re.compile(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$')
+
+        for name, url in FEEDS.items():
+            logger.info(f"[ThreatIntel] Fetching feed '{name}' from {url}")
+            try:
+                # Use a request with user-agent to prevent HTTP 403 Forbidden
+                req = urllib.request.Request(
+                    url, 
+                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) DPI-Engine/2.0'}
+                )
+                with urllib.request.urlopen(req, timeout=5.0) as response:
+                    content = response.read().decode('utf-8', errors='ignore')
+                    
+                lines = content.splitlines()
+                feed_ips = 0
+                feed_domains = 0
+
+                if name == "abuse_ch_feodo":
+                    for line in lines:
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        parts = re.split(r'\s+|,|;', line)
+                        for part in parts:
+                            part = part.strip()
+                            if ipv4_pattern.match(part):
+                                self.add_ip(part)
+                                feed_ips += 1
+                                
+                elif name == "openphish":
+                    for line in lines:
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        domain = line
+                        if "://" in domain:
+                            domain = domain.split("://", 1)[1]
+                        domain = domain.split("/", 1)[0]
+                        domain = domain.split(":", 1)[0]
+                        if domain:
+                            self.add_domain(domain)
+                            feed_domains += 1
+                            
+                elif name == "spamhaus_drop":
+                    for line in lines:
+                        line = line.strip()
+                        if not line or line.startswith(';'):
+                            continue
+                        cidr = line.split(';')[0].strip()
+                        if '/' in cidr:
+                            ip = cidr.split('/')[0]
+                            if ipv4_pattern.match(ip):
+                                self.add_ip(ip)
+                                feed_ips += 1
+                        elif ipv4_pattern.match(cidr):
+                            self.add_ip(cidr)
+                            feed_ips += 1
+
+                elif name == "urlhaus":
+                    for line in lines:
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            domain = parts[1].strip()
+                            if domain not in ("localhost", "localhost.localdomain"):
+                                self.add_domain(domain)
+                                feed_domains += 1
+                                
+                logger.info(f"[ThreatIntel] Feed '{name}' parsed successfully: added {feed_ips} IPs, {feed_domains} domains.")
+                ips_added += feed_ips
+                domains_added += feed_domains
+
+            except Exception as e:
+                logger.error(f"[ThreatIntel] Error fetching/parsing feed '{name}': {e}")
+                
+        return ips_added, domains_added
 
     def add_ip(self, ip: str) -> None:
         with self.lock:

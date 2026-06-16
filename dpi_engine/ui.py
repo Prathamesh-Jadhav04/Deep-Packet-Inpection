@@ -1691,6 +1691,14 @@ class DashboardServer:
                     ok, message = engine.stop_live_capture()
                     self._send_json({"ok": ok, "message": message}, 200 if ok else 400)
                     return
+                if self.path == "/api/threat-intel/update":
+                    try:
+                        from dpi_engine.threat_intel import threat_intel
+                        ips, domains = threat_intel.update_feeds()
+                        self._send_json({"ok": True, "message": f"Threat intelligence updated successfully: added {ips} IPs, {domains} domains."}, 200)
+                    except Exception as exc:
+                        self._send_json({"ok": False, "message": f"Failed to update threat feeds: {exc}"}, 500)
+                    return
                 self.send_error(404)
 
             def do_DELETE(self) -> None:

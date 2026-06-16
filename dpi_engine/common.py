@@ -276,17 +276,30 @@ class FiveTuple:
 
 
 def five_tuple_hash(tuple_: FiveTuple) -> int:
+    ip1 = ip_to_int(tuple_.src_ip)
+    ip2 = ip_to_int(tuple_.dst_ip)
+    port1 = tuple_.src_port
+    port2 = tuple_.dst_port
+
+    if ip1 < ip2 or (ip1 == ip2 and port1 < port2):
+        first_ip, second_ip = ip1, ip2
+        first_port, second_port = port1, port2
+    else:
+        first_ip, second_ip = ip2, ip1
+        first_port, second_port = port2, port1
+
     h = 0
     for value in (
-        ip_to_int(tuple_.src_ip),
-        ip_to_int(tuple_.dst_ip),
-        tuple_.src_port,
-        tuple_.dst_port,
+        first_ip,
+        second_ip,
+        first_port,
+        second_port,
         tuple_.protocol,
     ):
         h ^= (value + 0x9E3779B9 + ((h << 6) & 0xFFFFFFFFFFFFFFFF) + (h >> 2))
         h &= 0xFFFFFFFFFFFFFFFF
     return h
+
 
 
 @dataclass
