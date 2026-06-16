@@ -19,7 +19,7 @@ export function KPICard({ title, value, formattedValue, icon, accentColor = 'var
   const animatedValue = useAnimatedCounter(value, 400);
 
   return (
-    <div className={cn('dpi-card group relative overflow-hidden', className)}>
+    <div className={cn('dpi-card group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[var(--border-strong)]', className)}>
       {/* Accent glow */}
       <div
         className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-10 blur-2xl transition-opacity group-hover:opacity-20"
@@ -41,12 +41,18 @@ export function KPICard({ title, value, formattedValue, icon, accentColor = 'var
           )}
         </div>
         <div
-          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-1)] transition-colors duration-300 group-hover:border-neutral-700"
+          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-1)] transition-all duration-300 group-hover:scale-110 group-hover:border-[var(--border-strong)]"
           style={{ color: accentColor }}
         >
           {icon}
         </div>
       </div>
+
+      {/* Accent color bar */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[3px] opacity-70 transition-all duration-300 group-hover:h-[4px]"
+        style={{ background: accentColor }}
+      />
     </div>
   );
 }

@@ -125,11 +125,11 @@ export function DataTable<T>({
                       key={key}
                       onClick={() => onRowClick?.(item)}
                       className={cn(
-                        'absolute top-0 left-0 w-full flex items-center py-2 px-3 border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--panel-hover)]',
+                        'absolute top-0 left-0 w-full flex items-center py-2 pr-3 border-b border-[var(--border-subtle)] transition-all hover:bg-[var(--panel-hover)]',
                         onRowClick && 'cursor-pointer',
                         action === 'DROP'
-                          ? 'bg-[var(--accent-red-soft)]/5 text-[var(--accent-red)] hover:bg-[var(--accent-red-soft)]/10'
-                          : 'text-[var(--text-secondary)]'
+                          ? 'border-l-[3px] border-l-[var(--accent-red)] bg-[var(--accent-red-soft)]/5 text-[var(--accent-red)] hover:bg-[var(--accent-red-soft)]/10 pl-[9px]'
+                          : 'border-l-[3px] border-l-transparent text-[var(--text-secondary)] pl-[9px] hover:border-l-[var(--accent-blue)]/50'
                       )}
                       style={{
                         height: `${virtualRow.size}px`,
