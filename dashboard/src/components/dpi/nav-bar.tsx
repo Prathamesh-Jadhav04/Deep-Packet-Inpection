@@ -12,6 +12,8 @@ import {
   Info,
   Volume2,
   VolumeX,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useDPIStore } from '@/store/dpi-store';
 import { useDPIStats } from '@/hooks/useDPIStats';
@@ -26,7 +28,7 @@ interface NavBarProps {
 }
 
 export function NavBar({ className }: NavBarProps) {
-  const { activeTab, setActiveTab, isConnected, isMuted, setMuted } = useDPIStore();
+  const { activeTab, setActiveTab, isConnected, isMuted, setMuted, theme, setTheme } = useDPIStore();
   const { stats } = useDPIStats();
   const navRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -152,7 +154,21 @@ export function NavBar({ className }: NavBarProps) {
         </nav>
 
         {/* Status + Actions */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          {/* Quick theme toggle */}
+          <button
+            onClick={() => {
+              const nextTheme = theme === 'light' ? 'dark' : 'light';
+              setTheme(nextTheme);
+              playClickSound();
+            }}
+            className="p-2 rounded-full border border-[var(--border)] bg-[var(--panel-soft)] hover:bg-[var(--panel-hover)] text-[var(--text-secondary)] hover:text-[var(--text)] transition-all cursor-pointer flex items-center justify-center shadow-[var(--shadow-1)] hover:shadow-[var(--shadow-2)]"
+            title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
+          {/* Audio toggle */}
           <button
             onClick={() => {
               const nextMuted = !isMuted;
