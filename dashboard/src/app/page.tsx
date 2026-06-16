@@ -38,12 +38,17 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const currentOrigin = window.location.origin;
-      // Only auto-sync if running directly on the Python backend port (All-in-one deployment)
-      if (window.location.port === '8765') {
-        if (apiBase !== currentOrigin) {
-          setApiBase(currentOrigin);
+      const isDevPort = window.location.port === '3000' || window.location.port === '3001';
+      
+      if (!isDevPort) {
+        // If not running on Next.js dev server, we are running on the Python backend directly (local or cloud like Hugging Face)
+        // If apiBase is pointing to the default localhost, or we are on Hugging Face Spaces, sync it to the hosted origin
+        if (apiBase.includes('127.0.0.1:8765') || apiBase.includes('localhost:8765') || window.location.hostname.endsWith('.hf.space')) {
+          if (apiBase !== currentOrigin) {
+            setApiBase(currentOrigin);
+          }
         }
-      } else if (window.location.port === '3000' && apiBase.includes(':3000')) {
+      } else if (apiBase.includes(':3000') || apiBase.includes(':3001')) {
         setApiBase('http://127.0.0.1:8765');
       }
     }
