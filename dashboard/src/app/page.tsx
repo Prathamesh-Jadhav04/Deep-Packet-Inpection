@@ -55,12 +55,18 @@ export default function Home() {
   }, [apiBase, setApiBase]);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans transition-colors duration-200 relative">
+      {/* Premium ambient backdrop */}
+      <div className="ambient-bg">
+        <div className="ambient-glow" />
+        <div className="absolute inset-0 premium-grid premium-grid-mask" />
+      </div>
+
       {/* Top sticky navigation bar */}
       <NavBar />
 
       {/* Main dashboard tab panel layout */}
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-6 py-6 focus:outline-none">
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-6 py-6 focus:outline-none relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}

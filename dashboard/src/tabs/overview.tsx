@@ -281,10 +281,12 @@ export default function OverviewTab() {
                     contentStyle={{
                       background: 'var(--panel)',
                       borderColor: 'var(--border)',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       color: 'var(--text)',
                       fontFamily: 'JetBrains Mono, monospace',
                       fontSize: '12px',
+                      backdropFilter: 'blur(10px)',
+                      boxShadow: 'var(--shadow-4)',
                     }}
                   />
                   <Area
@@ -349,8 +351,10 @@ export default function OverviewTab() {
                         contentStyle={{
                           background: 'var(--panel)',
                           borderColor: 'var(--border)',
-                          borderRadius: '8px',
+                          borderRadius: '12px',
                           color: 'var(--text)',
+                          backdropFilter: 'blur(10px)',
+                          boxShadow: 'var(--shadow-4)',
                         }}
                       />
                     </PieChart>
@@ -398,8 +402,10 @@ export default function OverviewTab() {
                     contentStyle={{
                       background: 'var(--panel)',
                       borderColor: 'var(--border)',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       color: 'var(--text)',
+                      backdropFilter: 'blur(10px)',
+                      boxShadow: 'var(--shadow-4)',
                     }}
                   />
                   <Bar dataKey="load" name="Load Efficiency">

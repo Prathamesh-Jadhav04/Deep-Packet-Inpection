@@ -180,8 +180,10 @@ export default function TrafficAnalyticsTab() {
                   contentStyle={{
                     background: 'var(--panel)',
                     borderColor: 'var(--border)',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     color: 'var(--text)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: 'var(--shadow-4)',
                   }}
                 />
                 <Bar dataKey="value" name="Bytes Volume" radius={[0, 4, 4, 0]}>
@@ -213,8 +215,10 @@ export default function TrafficAnalyticsTab() {
                   contentStyle={{
                     background: 'var(--panel)',
                     borderColor: 'var(--border)',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     color: 'var(--text)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: 'var(--shadow-4)',
                   }}
                 />
                 <Bar dataKey="value" name="Frames Count" fill="var(--accent-violet)" radius={[4, 4, 0, 0]} />
