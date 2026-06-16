@@ -121,7 +121,7 @@ export function NavBar({ className }: NavBarProps) {
                   playClickSound();
                 }}
                 className={cn(
-                  'relative flex items-center gap-2 px-2.5 md:px-4 py-2 rounded-full text-[15px] whitespace-nowrap transition-all cursor-pointer',
+                  'relative flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-1.5 md:py-2 rounded-full text-[12px] md:text-[14px] whitespace-nowrap transition-all cursor-pointer',
                   'hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2',
                   isActive
                     ? 'font-semibold'
@@ -142,9 +142,9 @@ export function NavBar({ className }: NavBarProps) {
                     transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
                   />
                 )}
-                <span className="relative flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden md:inline">{name}</span>
+                <span className="relative flex items-center gap-1.5 md:gap-2">
+                  <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                  <span>{name}</span>
                 </span>
               </button>
             );
