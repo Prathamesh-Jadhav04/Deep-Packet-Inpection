@@ -27,6 +27,15 @@ export default function LiveCaptureTab() {
   // Is capture currently running on backend?
   const isCapturing = useMemo(() => stats?.capture_running ?? false, [stats?.capture_running]);
 
+  useEffect(() => {
+    if (interfaces.length > 0) {
+      const isHfSpace = typeof window !== 'undefined' && window.location.hostname.endsWith('.hf.space');
+      if (isHfSpace && interfaces.some(i => i.name === 'simulated')) {
+        setSelectedIface('simulated');
+      }
+    }
+  }, [interfaces]);
+
   const handleStartCapture = async () => {
     if (isCaptureActionLoading) return;
     const res = await startCapture({
@@ -196,11 +205,50 @@ export default function LiveCaptureTab() {
       </div>
 
       {(captureError || (stats && stats.last_error)) && (
-        <div className="bg-[var(--accent-red-soft)] border border-[var(--accent-red)]/30 text-[var(--accent-red)] px-4 py-3 rounded-lg flex items-center gap-3 animate-fade-in">
-          <ShieldAlert className="w-5 h-5 flex-shrink-0 animate-pulse" />
-          <div className="text-caption">
-            <span className="font-semibold">Capture Error:</span> {captureError || stats?.last_error}
+        <div className="bg-[var(--accent-red-soft)] border border-[var(--accent-red)]/30 text-[var(--accent-red)] px-4 py-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 mt-0.5 flex-shrink-0 text-[var(--accent-red)] animate-pulse" />
+            <div className="space-y-1">
+              <div className="text-caption font-semibold">Capture Error:</div>
+              <div className="text-body-sm opacity-90">{captureError || stats?.last_error}</div>
+              {((captureError || stats?.last_error || '').toLowerCase().includes('permission') ||
+                (captureError || stats?.last_error || '').toLowerCase().includes('permit') ||
+                (captureError || stats?.last_error || '').toLowerCase().includes('admin') ||
+                (captureError || stats?.last_error || '').toLowerCase().includes('privilege') ||
+                (captureError || stats?.last_error || '').toLowerCase().includes('operation not permitted')) && (
+                <div className="text-[11px] text-[var(--text-secondary)] mt-2">
+                  Tip: In containerized, sandbox, or cloud environments (like Hugging Face Spaces), raw network capture permissions are restricted. Use the <strong>Simulated / Dummy Capture</strong> mode to run the DPI analysis with pre-recorded mock packets.
+                </div>
+              )}
+            </div>
           </div>
+          {((captureError || stats?.last_error || '').toLowerCase().includes('permission') ||
+            (captureError || stats?.last_error || '').toLowerCase().includes('permit') ||
+            (captureError || stats?.last_error || '').toLowerCase().includes('admin') ||
+            (captureError || stats?.last_error || '').toLowerCase().includes('privilege') ||
+            (captureError || stats?.last_error || '').toLowerCase().includes('operation not permitted')) && (
+            <button
+              onClick={async () => {
+                setSelectedIface('simulated');
+                if (isCaptureActionLoading) return;
+                const res = await startCapture({
+                  iface: 'simulated',
+                  bpf: bpfFilter,
+                  count: packetLimit,
+                  duration: durationLimit || undefined,
+                  output_file: outputFile,
+                });
+                if (res.ok) {
+                  mutate();
+                }
+              }}
+              disabled={isCaptureActionLoading}
+              className="btn-primary flex-shrink-0 self-start md:self-center bg-[var(--accent-blue)] hover:bg-[var(--accent-blue-hover)] text-white font-medium flex items-center gap-1.5"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Use Simulated Mode</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -221,7 +269,7 @@ export default function LiveCaptureTab() {
                     <option value="">Scapy Default (Auto-detect)</option>
                     {interfaces.map((i) => (
                       <option key={i.name} value={i.name}>
-                        {i.name}
+                        {i.name === 'simulated' ? '🔌 Simulated / Dummy Capture (No Permissions Required)' : i.name}
                       </option>
                     ))}
                   </select>
@@ -262,6 +310,12 @@ export default function LiveCaptureTab() {
                 </button>
               </div>
             </div>
+
+            {selectedIface === 'simulated' && (
+              <div className="text-[11px] text-[var(--accent-blue)] bg-[var(--accent-blue-soft)]/20 px-3 py-2 rounded-lg border border-[var(--accent-blue)]/20 animate-fade-in">
+                💡 <strong>Simulated Capture active:</strong> Pre-recorded packet logs (`test_dpi.pcap`) will be continuously replayed at normal rates to populate metrics, graphs, tables, and trigger rule alerts, safely avoiding permission/socket constraints.
+              </div>
+            )}
 
             {/* Advanced configurations collapsible */}
             {showConfig && (
