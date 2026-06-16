@@ -1,0 +1,14 @@
+.git
+.gitignore
+.dockerignore
+node_modules
+dashboard/node_modules
+dashboard/.next
+dashboard/out
+venv
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pcap
+!test_dpi.pcap
