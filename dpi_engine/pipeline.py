@@ -1111,6 +1111,7 @@ class DPIEngine:
             print("Check that Npcap is installed and the interface name is valid.", file=sys.stderr)
             self.stats.set_status("failed")
             ok = False
+            raise exc
 
         print(f"[Live] Done reading {packet_id} packets")
 

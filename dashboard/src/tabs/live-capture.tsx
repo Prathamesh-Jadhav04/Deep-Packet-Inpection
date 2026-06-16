@@ -195,11 +195,11 @@ export default function LiveCaptureTab() {
         </div>
       </div>
 
-      {captureError && (
+      {(captureError || (stats && stats.last_error)) && (
         <div className="bg-[var(--accent-red-soft)] border border-[var(--accent-red)]/30 text-[var(--accent-red)] px-4 py-3 rounded-lg flex items-center gap-3 animate-fade-in">
-          <ShieldAlert className="w-5 h-5 flex-shrink-0 animate-bounce" />
+          <ShieldAlert className="w-5 h-5 flex-shrink-0 animate-pulse" />
           <div className="text-caption">
-            <span className="font-semibold">Capture Action Failed:</span> {captureError}
+            <span className="font-semibold">Capture Error:</span> {captureError || stats?.last_error}
           </div>
         </div>
       )}

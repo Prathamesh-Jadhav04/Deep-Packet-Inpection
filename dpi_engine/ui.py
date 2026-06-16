@@ -1523,17 +1523,22 @@ class DashboardController:
             self.last_error = ""
 
         def run_capture() -> None:
-            ok = engine.process_live(
-                output_file=output_file,
-                iface=iface or None,
-                duration=duration,
-                packet_count=packet_count,
-                bpf_filter=bpf_filter or None,
-                stop_event=stop_event,
-            )
-            if not ok:
+            try:
+                ok = engine.process_live(
+                    output_file=output_file,
+                    iface=iface or None,
+                    duration=duration,
+                    packet_count=packet_count,
+                    bpf_filter=bpf_filter or None,
+                    stop_event=stop_event,
+                )
+                if not ok:
+                    with self.lock:
+                        if not self.last_error:
+                            self.last_error = "Live capture failed. Check terminal output."
+            except Exception as exc:
                 with self.lock:
-                    self.last_error = "Live capture failed. Check terminal output."
+                    self.last_error = f"Live capture failed: {exc}"
 
         thread = threading.Thread(target=run_capture, name="DashboardLiveCapture")
         thread.daemon = True
