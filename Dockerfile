@@ -1,5 +1,5 @@
 # Stage 1: Build the Next.js Frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 WORKDIR /app/dashboard
 
 # Copy package files and install dependencies
@@ -35,6 +35,9 @@ COPY test_dpi.pcap .
 
 # Copy the compiled Next.js frontend assets from Stage 1
 COPY --from=frontend-builder /app/dashboard/out ./dashboard/out
+
+# Change ownership of /app to UID 1000 for Hugging Face permissions
+RUN chown -R 1000:1000 /app
 
 # Expose Hugging Face Space default port
 EXPOSE 7860
